@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#FFFFFF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PROTOCOL // 03">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>PROTOCOL // 03 — MULTI-DEVICE EXECUTION OS</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Identity Services OAuth 2.0 -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        bw: {
+                            bg: '#FFFFFF',
+                            ink: '#000000',
+                            muted: '#71717A',
+                            hairline: '#E4E4E7',
+                            surface: '#FAFAFA',
+                            inactive: '#D4D4D8'
+                        }
+                    },
+                    keyframes: {
+                        popCheck: {
+                            '0%': { transform: 'scale(0.84)' },
+                            '50%': { transform: 'scale(1.12)' },
+                            '100%': { transform: 'scale(1)' }
+                        }
+                    },
+                    animation: {
+                        popCheck: 'popCheck 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            border-radius: 2px;
+        }
+        input {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        html, body {
+            background-color: #FFFFFF;
+            color: #000000;
+            height: 100dvh;
+            width: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+            -webkit-font-smoothing: antialiased;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+        .border-stark {
+            border: 1.5px solid #000000;
+        }
+        .border-stark-t {
+            border-top: 1.5px solid #000000;
+        }
+        .border-stark-b {
+            border-bottom: 1.5px solid #000000;
+        }
+        .border-stark-r {
+            border-right: 1.5px solid #000000;
+        }
+        .hairline-b {
+            border-bottom: 1px solid #E4E4E7;
+        }
+        .hairline-t {
+            border-top: 1px solid #E4E4E7;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Frame simulators when previewing Mobile or Tablet on a larger screen */
+        .preview-frame-mobile {
+            max-width: 430px;
+            margin: 0 auto;
+            border-left: 1.5px solid #000000;
+            border-right: 1.5px solid #000000;
+            height: 100%;
+        }
+        .preview-frame-tablet {
+            max-width: 960px;
+            margin: 0 auto;
+            border-left: 1.5px solid #000000;
+            border-right: 1.5px solid #000000;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-[100dvh] bg-bw-bg text-bw-ink">
+
+    <header class="border-stark-b bg-bw-bg px-3 sm:px-5 py-2.5 shrink-0 z-30 flex flex-wrap items-center justify-between gap-2">
+        <!-- Left: Brand Identity & Active Device Badge -->
+        <div class="flex items-center gap-2.5">
+            <span class="bg-bw-ink text-bw-bg font-mono text-[11px] font-bold px-2 py-1 tracking-widest">
+                P // 03
+            </span>
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-bold tracking-wider uppercase">EXECUTION OS</span>
+                    <span id="active-layout-badge" class="font-mono text-[9px] font-bold uppercase px-1.5 py-0.5 border border-bw-ink bg-bw-surface">
+                        AUTO
+                    </span>
+                </div>
+                <span class="font-mono text-[10px] text-bw-muted hidden sm:inline">
+                    READ & EXECUTE // GEMINI + GCAL + GTASKS + NOTION
+                </span>
+            </div>
+        </div>
+
+        <!-- Center: Viewport Mode Switcher ([AUTO] [MOBILE] [TABLET] [DESKTOP]) -->
+        <div class="flex items-center border-stark bg-bw-bg p-0.5" role="group" aria-label="Viewport Mode Switcher">
+            <button type="button" data-vp="auto" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors bg-bw-ink text-bw-bg">
+                AUTO
+            </button>
+            <button type="button" data-vp="mobile" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors text-bw-ink hover:bg-bw-surface">
+                MOBILE
+            </button>
+            <button type="button" data-vp="tablet" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors text-bw-ink hover:bg-bw-surface">
+                TABLET
+            </button>
+            <button type="button" data-vp="desktop" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors text-bw-ink hover:bg-bw-surface">
+                DESKTOP
+            </button>
+        </div>
+
+        <!-- Right: Refresh & Google Sync Status Button -->
+        <div class="flex items-center gap-1.5">
+            <button id="btn-refresh-sync" type="button" title="Refresh Google Sync [Shortcut: R]" class="border-stark px-2.5 py-1 font-mono text-[10px] font-bold uppercase bg-bw-bg text-bw-ink hover:bg-bw-ink hover:text-bw-bg active:scale-95 transition-all">
+                ↻ SYNC
+            </button>
+            <button id="btn-open-oauth" type="button" class="border-stark px-2.5 py-1 font-mono text-[10px] font-bold uppercase flex items-center gap-1.5 bg-bw-bg text-bw-ink hover:bg-bw-ink hover:text-bw-bg transition-colors">
+                <span id="sync-led" class="w-2 h-2 bg-bw-ink inline-block"></span>
+                <span id="sync-status-label">DEMO // CONNECT</span>
+            </button>
+        </div>
+    </header>
+
+    <div id="viewport-stage" class="flex-1 overflow-hidden relative bg-bw-surface">
+
+        <!-- =======================================================================
+             INTERFACE 1: MOBILE OS (ANDROID THUMB-ZONE SINGLE-PANE ERGONOMIC SHELL)
+             ======================================================================= -->
+        <div id="layout-mobile" class="hidden h-full bg-bw-bg flex-col justify-between preview-frame-mobile">
+            <!-- Mobile Compact Header -->
+            <div class="px-4 pt-3 pb-2 border-stark-b shrink-0 bg-bw-bg">
+                <div class="flex items-baseline justify-between">
+                    <div>
+                        <span id="mob-date-label" class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-bw-muted block">
+                            WED · 14 OCT
+                        </span>
+                        <h1 id="mob-pane-title" class="text-xl font-extrabold tracking-tight text-bw-ink mt-0.5">
+                            01 // DAILY RITUALS
+                        </h1>
+                    </div>
+                    <div class="text-right">
+                        <span id="mob-ratio-badge" class="font-mono text-sm font-bold px-2 py-0.5 bg-bw-ink text-bw-bg">
+                            75% // 3 OF 4
+                        </span>
+                        <span id="mob-streak-sub" class="font-mono text-[10px] text-bw-muted block mt-1">
+                            STREAK: 5 DAYS
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 2px Progress Line -->
+                <div class="w-full h-[2px] bg-bw-hairline mt-2.5 overflow-hidden">
+                    <div id="mob-progress-bar" class="h-full bg-bw-ink transition-all duration-300" style="width: 75%;"></div>
+                </div>
+
+                <!-- 7-Day Pill Selector Strip -->
+                <div id="mob-day-strip" class="grid grid-cols-7 gap-1 mt-2.5 pt-2 hairline-t">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+
+            <!-- Mobile Scrollable Single-Pane Body -->
+            <div id="mob-scroll-body" class="flex-1 overflow-y-auto no-scrollbar px-4 py-3">
+                <!-- Sub-pane A: 01 RITUALS -->
+                <div id="mob-view-rituals" class="space-y-1">
+                    <div class="flex items-center justify-between py-1 hairline-b">
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted">
+                            SOURCE: GOOGLE TASKS [HABITS]
+                        </span>
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-ink font-semibold">
+                            TAP TO COMPLETE
+                        </span>
+                    </div>
+                    <div id="mob-rituals-list" class="divide-y divide-bw-hairline"></div>
+                </div>
+
+                <!-- Sub-pane B: 02 TASKS -->
+                <div id="mob-view-tasks" class="hidden space-y-1">
+                    <div class="flex items-center justify-between py-1 hairline-b">
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted">
+                            CREATED VIA GEMINI & GOOGLE TASKS
+                        </span>
+                        <span id="mob-tasks-counter" class="font-mono text-[10px] font-bold uppercase"></span>
+                    </div>
+                    <div id="mob-tasks-list" class="divide-y divide-bw-hairline"></div>
+                </div>
+
+                <!-- Sub-pane C: 03 SCHEDULE -->
+                <div id="mob-view-schedule" class="hidden space-y-2.5 pt-1">
+                    <div class="flex items-center justify-between py-1 hairline-b">
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted">
+                            GOOGLE CALENDAR + NOTION CALENDAR
+                        </span>
+                        <span id="mob-now-clock" class="font-mono text-[10px] font-bold">12:20</span>
+                    </div>
+                    <div id="mob-schedule-list" class="space-y-2"></div>
+                </div>
+
+                <!-- Sub-pane D: 04 MATRIX -->
+                <div id="mob-view-matrix" class="hidden space-y-4 pt-1">
+                    <div class="p-3.5 border-stark bg-bw-bg space-y-3">
+                        <div class="flex items-center justify-between hairline-b pb-2">
+                            <span class="font-mono text-[11px] font-bold uppercase tracking-wider">7-DAY VELOCITY</span>
+                            <span id="mob-vel-avg" class="font-mono text-[10px] font-bold bg-bw-ink text-bw-bg px-1.5 py-0.5">82% AVG</span>
+                        </div>
+                        <div id="mob-velocity-bars" class="grid grid-cols-7 gap-2 items-end h-28 pt-3"></div>
+                    </div>
+
+                    <div class="p-3.5 border-stark bg-bw-bg space-y-2.5">
+                        <div class="flex items-center justify-between hairline-b pb-2">
+                            <span class="font-mono text-[11px] font-bold uppercase tracking-wider">HABIT STREAK MATRIX</span>
+                            <span class="font-mono text-[9px] text-bw-muted uppercase">M · T · W · T · F · S · S</span>
+                        </div>
+                        <div id="mob-matrix-rows" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Fixed Thumb-Zone Bottom Bar -->
+            <nav class="border-stark-t bg-bw-bg grid grid-cols-4 shrink-0">
+                <button type="button" data-mob-tab="rituals" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-ink text-bw-bg border-r border-bw-hairline">
+                    01 RITUALS
+                </button>
+                <button type="button" data-mob-tab="tasks" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-bg text-bw-ink border-r border-bw-hairline">
+                    02 TASKS
+                </button>
+                <button type="button" data-mob-tab="schedule" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-bg text-bw-ink border-r border-bw-hairline">
+                    03 SCHEDULE
+                </button>
+                <button type="button" data-mob-tab="matrix" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-bg text-bw-ink">
+                    04 MATRIX
+                </button>
+            </nav>
+        </div>
+
+        <!-- =======================================================================
+             INTERFACE 2: TABLET OS (ASYMMETRIC 2-COLUMN SWISS EDITORIAL FOLIO)
+             ======================================================================= -->
+        <div id="layout-tablet" class="hidden h-full bg-bw-bg flex-col preview-frame-tablet">
+            <!-- Tablet Folio Subheader with 7-Day Selector -->
+            <div class="px-6 py-3 border-stark-b flex items-center justify-between gap-4 bg-bw-bg shrink-0">
+                <div>
+                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-bw-muted block">
+                        TABLET FOLIO // SPLIT-SCREEN EXECUTION DECK
+                    </span>
+                    <div class="flex items-baseline gap-3 mt-0.5">
+                        <h2 id="tab-date-heading" class="text-lg font-extrabold tracking-tight">WEDNESDAY, 14 OCT</h2>
+                        <span id="tab-completion-pill" class="font-mono text-xs font-bold px-2 py-0.5 bg-bw-ink text-bw-bg">
+                            75% RITUALS
+                        </span>
+                    </div>
+                </div>
+                <div id="tab-day-strip" class="grid grid-cols-7 gap-1.5 w-72"></div>
+            </div>
+
+            <!-- Asymmetric 2-Column Split (Left 45%: Schedule + Matrix | Right 55%: Rituals + Tasks) -->
+            <div class="flex-1 grid grid-cols-12 overflow-hidden">
+                <!-- Left Column (5 of 12 cols ~ 42%) -->
+                <div class="col-span-5 border-stark-r overflow-y-auto no-scrollbar p-5 space-y-6 bg-bw-surface/50">
+                    <!-- Sticky Schedule Block -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between border-stark-b pb-2">
+                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
+                                01 // TODAY'S SCHEDULE
+                            </span>
+                            <span class="font-mono text-[10px] text-bw-muted uppercase">GCAL + NOTION</span>
+                        </div>
+                        <div id="tab-schedule-list" class="space-y-2"></div>
+                    </div>
+
+                    <!-- 7-Day Streak Matrix & Velocity -->
+                    <div class="p-4 border-stark bg-bw-bg space-y-4">
+                        <div class="flex items-center justify-between hairline-b pb-2">
+                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
+                                02 // 7D STREAK MATRIX
+                            </span>
+                            <span id="tab-vel-badge" class="font-mono text-[10px] font-bold bg-bw-ink text-bw-bg px-1.5 py-0.5">
+                                82% VELOCITY
+                            </span>
+                        </div>
+                        <div id="tab-velocity-bars" class="grid grid-cols-7 gap-2 items-end h-24 pt-2"></div>
+                        <div id="tab-matrix-rows" class="space-y-2 pt-2 hairline-t"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column (7 of 12 cols ~ 58%): Interactive Execution Deck -->
+                <div class="col-span-7 overflow-y-auto no-scrollbar p-6 space-y-7 bg-bw-bg">
+                    <!-- Daily Rituals Execution -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between border-stark-b pb-2">
+                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
+                                03 // DAILY RITUALS (HABITS LIST)
+                            </span>
+                            <button type="button" onclick="markAllRitualsForSelectedDay()" class="font-mono text-[10px] font-bold uppercase underline underline-offset-4">
+                                TOGGLE ALL
+                            </button>
+                        </div>
+                        <div id="tab-rituals-list" class="divide-y divide-bw-hairline"></div>
+                    </div>
+
+                    <!-- Pending Google Tasks & Gemini Reminders -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between border-stark-b pb-2">
+                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
+                                04 // GOOGLE TASKS & GEMINI REMINDERS
+                            </span>
+                            <span id="tab-tasks-summary" class="font-mono text-[10px] text-bw-muted uppercase"></span>
+                        </div>
+                        <div id="tab-tasks-list" class="divide-y divide-bw-hairline"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =======================================================================
+             INTERFACE 3: DESKTOP / LAPTOP OS (WINDOWS 11 3-PANE COMMAND CENTER)
+             ======================================================================= -->
+        <div id="layout-desktop" class="hidden h-full bg-bw-bg flex-col w-full">
+            <!-- Top Telemetry Status Bar -->
+            <div class="px-6 py-2 border-stark-b bg-bw-surface flex items-center justify-between text-[11px] font-mono shrink-0">
+                <div class="flex items-center gap-6">
+                    <span><strong class="font-bold">TELEMETRY:</strong> ONLINE</span>
+                    <span><strong class="font-bold">FOCUS:</strong> AI/ML & CS CORE</span>
+                    <span id="desk-live-clock">WED 14 OCT // 12:20:00 IST</span>
+                </div>
+                <div class="flex items-center gap-4 text-bw-muted">
+                    <span>KEYS: <strong class="text-bw-ink">[1-5]</strong> TOGGLE RITUAL</span>
+                    <span><strong class="text-bw-ink">[R]</strong> SYNC GOOGLE</span>
+                    <span><strong class="text-bw-ink">[←/→]</strong> CHANGE DAY</span>
+                </div>
+            </div>
+
+            <!-- 3-Column Bento Command Center -->
+            <div class="flex-1 grid grid-cols-12 overflow-hidden">
+
+                <!-- COLUMN 1 (4 Cols): DAILY RITUALS + 7-DAY VELOCITY & MATRIX -->
+                <section class="col-span-4 border-stark-r flex flex-col overflow-y-auto no-scrollbar p-6 space-y-6 bg-bw-bg">
+                    <div class="flex items-baseline justify-between border-stark-b pb-2.5">
+                        <div>
+                            <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">PANE 01 // HABIT ENGINE</span>
+                            <h2 class="text-lg font-extrabold tracking-tight mt-0.5">DAILY RITUALS</h2>
+                        </div>
+                        <span id="desk-ritual-score" class="font-mono text-sm font-bold px-2 py-0.5 bg-bw-ink text-bw-bg">
+                            3/4 DONE
+                        </span>
+                    </div>
+
+                    <!-- 7-Day Selector Strip -->
+                    <div id="desk-day-strip" class="grid grid-cols-7 gap-1.5"></div>
+
+                    <!-- Rituals Check-off List -->
+                    <div id="desk-rituals-list" class="divide-y divide-bw-hairline border-t border-b border-bw-hairline"></div>
+
+                    <!-- Weekly Velocity Column Chart + Matrix -->
+                    <div class="p-4 border-stark bg-bw-surface space-y-4 mt-auto">
+                        <div class="flex items-center justify-between hairline-b pb-2">
+                            <span class="font-mono text-[11px] font-bold uppercase tracking-wider">7-DAY STREAK VELOCITY</span>
+                            <span id="desk-vel-pct" class="font-mono text-[10px] font-bold px-1.5 py-0.5 bg-bw-ink text-bw-bg">82% AVG</span>
+                        </div>
+                        <div id="desk-velocity-bars" class="grid grid-cols-7 gap-2 items-end h-24 pt-2"></div>
+                        <div class="pt-2 hairline-t space-y-1.5" id="desk-matrix-rows"></div>
+                    </div>
+                </section>
+
+                <!-- COLUMN 2 (4 Cols): GOOGLE TASKS & GEMINI REMINDERS EXECUTION QUEUE -->
+                <section class="col-span-4 border-stark-r flex flex-col overflow-y-auto no-scrollbar p-6 space-y-5 bg-bw-bg">
+                    <div class="flex items-baseline justify-between border-stark-b pb-2.5">
+                        <div>
+                            <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">PANE 02 // TWO-WAY PATCH SYNC</span>
+                            <h2 class="text-lg font-extrabold tracking-tight mt-0.5">GOOGLE TASKS & REMINDERS</h2>
+                        </div>
+                        <span id="desk-tasks-count" class="font-mono text-xs font-bold border border-bw-ink px-2 py-0.5">
+                            4 PENDING
+                        </span>
+                    </div>
+
+                    <div class="p-3 border border-bw-hairline bg-bw-surface font-mono text-[11px] text-bw-muted leading-relaxed">
+                        STRICT EXECUTION MODE: Create tasks by asking <strong class="text-bw-ink">Gemini</strong> or in <strong class="text-bw-ink">Google Tasks</strong>. Check off below to sync completion across all devices.
+                    </div>
+
+                    <div id="desk-tasks-list" class="divide-y divide-bw-hairline"></div>
+                </section>
+
+                <!-- COLUMN 3 (4 Cols): FULL-DAY CHRONOLOGICAL SCHEDULE (GCAL + NOTION) -->
+                <section class="col-span-4 flex flex-col overflow-y-auto no-scrollbar p-6 space-y-5 bg-bw-surface/40">
+                    <div class="flex items-baseline justify-between border-stark-b pb-2.5">
+                        <div>
+                            <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">PANE 03 // TIME-BLOCK LEDGER</span>
+                            <h2 class="text-lg font-extrabold tracking-tight mt-0.5">GCAL + NOTION SCHEDULE</h2>
+                        </div>
+                        <span id="desk-cal-badge" class="font-mono text-[10px] font-bold uppercase px-2 py-0.5 bg-bw-ink text-bw-bg">
+                            LIVE AGENDA
+                        </span>
+                    </div>
+
+                    <div id="desk-schedule-list" class="space-y-3"></div>
+                </section>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div id="oauth-modal" class="fixed inset-0 bg-white/90 z-50 hidden items-center justify-center p-4">
+        <div class="w-full max-w-md bg-bw-bg border-2 border-bw-ink p-6 space-y-5">
+            <div class="flex items-center justify-between border-stark-b pb-3">
+                <div>
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">TWO-WAY CLOUD ENGINE</span>
+                    <h3 class="font-mono text-sm font-bold uppercase">GOOGLE TASKS & CALENDAR SYNC</h3>
+                </div>
+                <button id="btn-close-oauth" type="button" class="font-mono text-xs px-2.5 py-1 border-stark hover:bg-bw-ink hover:text-bw-bg">
+                    ESC
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs leading-relaxed">
+                <p class="text-bw-muted">
+                    Connect your Google account so tasks/reminders created via <strong class="text-bw-ink">Gemini</strong>, <strong class="text-bw-ink">Google Tasks</strong>, <strong class="text-bw-ink">Google Calendar</strong>, and <strong class="text-bw-ink">Notion Calendar</strong> appear here automatically—and checking an item sends a live <code class="font-mono bg-bw-surface px-1">PATCH</code> request back to Google.
+                </p>
+
+                <div>
+                    <label for="oauth-client-id" class="block font-mono text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                        GOOGLE OAUTH 2.0 CLIENT ID
+                    </label>
+                    <input
+                        id="oauth-client-id"
+                        type="text"
+                        placeholder="123456789-xxx.apps.googleusercontent.com"
+                        class="w-full px-3 py-2.5 border-stark font-mono text-xs bg-bw-bg text-bw-ink focus:outline-none"
+                    />
+                </div>
+
+                <div class="p-3 border border-bw-hairline bg-bw-surface space-y-1 font-mono text-[10px] text-bw-muted">
+                    <div class="text-bw-ink font-bold">SCOPES USED FOR TWO-WAY SYNC:</div>
+                    <div>• https://www.googleapis.com/auth/tasks (Read & Mark Done)</div>
+                    <div>• https://www.googleapis.com/auth/calendar.readonly (GCal + Notion)</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                <button id="btn-reset-demo" type="button" class="py-2.5 border border-bw-hairline font-mono text-[11px] font-bold uppercase hover:border-bw-ink">
+                    RESET DEMO DATA
+                </button>
+                <button id="btn-authorize-google" type="button" class="py-2.5 bg-bw-ink text-bw-bg font-mono text-[11px] font-bold uppercase tracking-wider active:opacity-80">
+                    AUTHORIZE & SYNC
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONOCHROME TOAST BANNER -->
+    <div id="bw-toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-150">
+        <div class="px-4 py-1.5 bg-bw-ink text-bw-bg font-mono text-[10px] font-bold uppercase tracking-[0.18em] border border-bw-bg">
+            <span id="bw-toast-msg">SYNCED</span>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================================================
+           1. WEEK CALENDAR CONTEXT & DEFAULT DATA
+           ============================================================================ */
+        const STORAGE_KEY = 'protocol_03_multidevice_state_v1';
+        const SHORT_DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+        const MED_DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+        const FULL_DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+
+        function buildWeekDays() {
+            const now = new Date();
+            const raw = now.getDay();
+            const todayIdx = raw === 0 ? 6 : raw - 1; // 0=Mon .. 6=Sun
+
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - todayIdx);
+            monday.setHours(0, 0, 0, 0);
+
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                days.push({
+                    idx: i,
+                    short: SHORT_DAYS[i],
+                    med: MED_DAYS[i],
+                    full: FULL_DAYS[i],
+                    dateNum: String(d.getDate()).padStart(2, '0'),
+                    monthShort: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+                    iso: d.toISOString().slice(0, 10),
+                    isToday: i === todayIdx
+                });
+            }
+            return { todayIdx, days };
+        }
+
+        const weekCtx = buildWeekDays();
+        let selectedDayIdx = weekCtx.todayIdx;
+        let viewportMode = 'auto'; // 'auto' | 'mobile' | 'tablet' | 'desktop'
+        let activeMobileTab = 'rituals'; // 'rituals' | 'tasks' | 'schedule' | 'matrix'
+        let googleAccessToken = null;
+        let tokenClient = null;
+
+        function getDefaultState() {
+            const t = weekCtx.todayIdx;
+            const fillPattern = (fn) => [0, 1, 2, 3, 4, 5, 6].map(d => (d <= t ? Boolean(fn(d)) : false));
+
+            return {
+                clientId: '',
+                habitsListId: '@default',
+                tasksListId: '@default',
+                rituals: [
+                    {
+                        id: 'rit-1',
+                        googleTaskId: null,
+                        name: 'Calisthenics & Pull-ups',
+                        category: 'PHYSICAL',
+                        days: fillPattern(d => d !== 1)
+                    },
+                    {
+                        id: 'rit-2',
+                        googleTaskId: null,
+                        name: '2kg Dumbbell Shoulders',
+                        category: 'STRENGTH',
+                        days: fillPattern(d => d % 2 === 0 || d === t)
+                    },
+                    {
+                        id: 'rit-3',
+                        googleTaskId: null,
+                        name: 'DSA & Algorithm Practice',
+                        category: 'CODE',
+                        days: fillPattern(() => true)
+                    },
+                    {
+                        id: 'rit-4',
+                        googleTaskId: null,
+                        name: 'Deep Study Session (NotebookLM)',
+                        category: 'ACADEMIC',
+                        days: fillPattern(d => d !== 0)
+                    },
+                    {
+                        id: 'rit-5',
+                        googleTaskId: null,
+                        name: 'Daily Hydration & Mobility',
+                        category: 'RECOVERY',
+                        days: fillPattern(d => d < t)
+                    }
+                ],
+                tasks: [
+                    {
+                        id: 'gt-1',
+                        googleTaskId: null,
+                        title: 'Revise Discrete Mathematics — Graph Theory & Trees',
+                        dueLabel: 'TODAY // GEMINI REMINDER',
+                        source: 'GEMINI -> GTASKS',
+                        done: false
+                    },
+                    {
+                        id: 'gt-2',
+                        googleTaskId: null,
+                        title: 'Complete Java Object-Oriented Quiz Prep & Lab Review',
+                        dueLabel: 'TODAY // 17:00',
+                        source: 'GOOGLE TASKS',
+                        done: false
+                    },
+                    {
+                        id: 'gt-3',
+                        googleTaskId: null,
+                        title: 'Organize AI/ML Mid-Term Exam Summary in NotebookLM',
+                        dueLabel: 'TODAY // HIGH PRIORITY',
+                        source: 'GEMINI -> GTASKS',
+                        done: true
+                    },
+                    {
+                        id: 'gt-4',
+                        googleTaskId: null,
+                        title: 'Push Updated Portfolio & Habit OS Repo to GitHub Pages',
+                        dueLabel: 'UPCOMING // TOMORROW',
+                        source: 'GOOGLE TASKS',
+                        done: false
+                    },
+                    {
+                        id: 'gt-5',
+                        googleTaskId: null,
+                        title: 'Solve 2 Medium LeetCode Array / DP Problems',
+                        dueLabel: 'TODAY // 21:30',
+                        source: 'GEMINI -> GTASKS',
+                        done: false
+                    }
+                ],
+                schedule: [
+                    {
+                        id: 'ev-1',
+                        time: '07:30',
+                        endTime: '08:15',
+                        title: 'Morning Calisthenics & 2kg Shoulder Protocol',
+                        source: 'GCAL',
+                        location: 'HOME GYM'
+                    },
+                    {
+                        id: 'ev-2',
+                        time: '10:00',
+                        endTime: '12:00',
+                        title: 'AI/ML Core Lecture & Mid-Term Exam Revision Block',
+                        source: 'NOTION CAL',
+                        location: 'ACADEMIC BLOCK'
+                    },
+                    {
+                        id: 'ev-3',
+                        time: '14:00',
+                        endTime: '15:30',
+                        title: 'Java Programming & Discrete Structures Deep Work',
+                        source: 'NOTION CAL',
+                        location: 'STUDY DESK'
+                    },
+                    {
+                        id: 'ev-4',
+                        time: '17:30',
+                        endTime: '18:30',
+                        title: 'DSA & LeetCode Problem Solving Sprint',
+                        source: 'GCAL',
+                        location: 'LAPTOP'
+                    },
+                    {
+                        id: 'ev-5',
+                        time: '21:00',
+                        endTime: '22:00',
+                        title: 'Evening Protocol Review & Next-Day Planning',
+                        source: 'GCAL',
+                        location: 'ALL DEVICES'
+                    }
+                ]
+            };
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return getDefaultState();
+                const parsed = JSON.parse(raw);
+                if (!parsed || !Array.isArray(parsed.rituals)) return getDefaultState();
+                return parsed;
+            } catch (e) {
+                return getDefaultState();
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        let state = loadState();
+
+        /* ============================================================================
+           2. TACTILE AUDIO & HAPTIC FEEDBACK
+           ============================================================================ */
+        function playTactileClick(isDone) {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(isDone ? 12 : 6); } catch (e) {}
+            }
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(isDone ? 540 : 250, now);
+                osc.frequency.exponentialRampToValueAtTime(isDone ? 920 : 150, now + 0.045);
+
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+                osc.start(now);
+                osc.stop(now + 0.055);
+            } catch (e) {}
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('bw-toast');
+            const label = document.getElementById('bw-toast-msg');
+            label.textContent = msg;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            clearTimeout(window.__bwToastTimer);
+            window.__bwToastTimer = setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 1500);
+        }
+
+        /* ============================================================================
+           3. ADAPTIVE VIEWPORT DETECTION & SWITCHER ENGINE
+           ============================================================================ */
+        function resolveEffectiveLayout() {
+            if (viewportMode !== 'auto') return viewportMode;
+            const w = window.innerWidth;
+            if (w < 768) return 'mobile';
+            if (w < 1180) return 'tablet';
+            return 'desktop';
+        }
+
+        function applyViewportMode() {
+            const effective = resolveEffectiveLayout();
+            const mobEl = document.getElementById('layout-mobile');
+            const tabEl = document.getElementById('layout-tablet');
+            const deskEl = document.getElementById('layout-desktop');
+
+            mobEl.classList.add('hidden');
+            mobEl.classList.remove('flex');
+            tabEl.classList.add('hidden');
+            tabEl.classList.remove('flex');
+            deskEl.classList.add('hidden');
+            deskEl.classList.remove('flex');
+
+            if (effective === 'mobile') {
+                mobEl.classList.remove('hidden');
+                mobEl.classList.add('flex');
+            } else if (effective === 'tablet') {
+                tabEl.classList.remove('hidden');
+                tabEl.classList.add('flex');
+            } else {
+                deskEl.classList.remove('hidden');
+                deskEl.classList.add('flex');
+            }
+
+            // Update Top Badge & Switcher Buttons
+            const badge = document.getElementById('active-layout-badge');
+            badge.textContent = viewportMode === 'auto'
+                ? `AUTO // ${effective.toUpperCase()}`
+                : effective.toUpperCase();
+
+            document.querySelectorAll('.vp-btn').forEach(btn => {
+                const isSelected = btn.getAttribute('data-vp') === viewportMode;
+                btn.className = `vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors ${
+                    isSelected ? 'bg-bw-ink text-bw-bg' : 'text-bw-ink hover:bg-bw-surface'
+                }`;
+            });
+        }
+
+        /* ============================================================================
+           4. METRICS & STREAK VELOCITY ENGINE
+           ============================================================================ */
+        function computeStats() {
+            const totalRituals = state.rituals.length;
+            const countsPerDay = [0, 1, 2, 3, 4, 5, 6].map(dIdx =>
+                state.rituals.filter(r => r.days[dIdx]).length
+            );
+            const pctPerDay = countsPerDay.map(c =>
+                totalRituals === 0 ? 0 : Math.round((c / totalRituals) * 100)
+            );
+
+            let activeStreak = 0;
+            for (let d = weekCtx.todayIdx; d >= 0; d--) {
+                if (countsPerDay[d] > 0) activeStreak++;
+                else break;
+            }
+
+            const elapsed = Math.max(weekCtx.todayIdx + 1, 1);
+            const totalChecks = countsPerDay.reduce((a, b) => a + b, 0);
+            const weeklyVelocityPct = totalRituals === 0
+                ? 0
+                : Math.min(100, Math.round((totalChecks / (totalRituals * elapsed)) * 100));
+
+            const pendingTasksCount = state.tasks.filter(t => !t.done).length;
+
+            return {
+                totalRituals,
+                countsPerDay,
+                pctPerDay,
+                activeStreak,
+                weeklyVelocityPct,
+                pendingTasksCount
+            };
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        /* ============================================================================
+           5. SHARED COMPONENT BUILDERS (RENDERING ALL 3 DEVICE LAYOUTS IN LOCKSTEP)
+           ============================================================================ */
+        function buildDayStripHtml(stats) {
+            return weekCtx.days.map((d, idx) => {
+                const isSel = idx === selectedDayIdx;
+                const pct = stats.pctPerDay[idx];
+                const dot = isSel
+                    ? 'bg-bw-bg'
+                    : pct === 100
+                        ? 'bg-bw-ink'
+                        : pct > 0
+                            ? 'bg-bw-muted'
+                            : 'bg-transparent';
+
+                return `
+                    <button type="button" onclick="selectDay(${idx})" class="py-1.5 px-1 border transition-colors flex flex-col items-center justify-center ${
+                        isSel
+                            ? 'bg-bw-ink text-bw-bg border-bw-ink'
+                            : 'bg-bw-bg text-bw-ink border-bw-hairline hover:border-bw-ink'
+                    }">
+                        <span class="font-mono text-[9px] tracking-widest ${isSel ? 'text-bw-inactive' : 'text-bw-muted'}">${d.short}</span>
+                        <span class="font-mono text-xs font-bold mt-0.5">${d.dateNum}</span>
+                        <span class="w-1 h-1 rounded-full mt-1 ${dot}"></span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function buildRitualsListHtml(touchLarge = false) {
+            return state.rituals.map((r, i) => {
+                const isDone = Boolean(r.days[selectedDayIdx]);
+                const streakCount = r.days.filter(Boolean).length;
+                const padClass = touchLarge ? 'py-4' : 'py-3';
+
+                return `
+                    <div onclick="toggleRitual('${r.id}')" class="${padClass} flex items-center justify-between gap-3 cursor-pointer group">
+                        <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                            <button type="button" aria-label="Toggle ${escapeHtml(r.name)}" class="w-5 h-5 shrink-0 border-stark flex items-center justify-center font-mono text-xs font-bold transition-transform ${
+                                isDone ? 'bg-bw-ink text-bw-bg animate-popCheck' : 'bg-bw-bg text-transparent'
+                            }">
+                                ✓
+                            </button>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-sm font-semibold block truncate ${
+                                    isDone ? 'line-through text-bw-muted' : 'text-bw-ink'
+                                }">${escapeHtml(r.name)}</span>
+                                <span class="font-mono text-[9px] uppercase tracking-widest text-bw-muted">
+                                    [${i + 1}] ${escapeHtml(r.category || 'RITUAL')}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="font-mono text-xs font-bold px-1.5 py-0.5 border ${
+                            isDone ? 'border-bw-ink bg-bw-ink text-bw-bg' : 'border-bw-hairline text-bw-muted'
+                        }">
+                            ${streakCount}/7D
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildTasksListHtml(touchLarge = false) {
+            return state.tasks.map(t => {
+                const padClass = touchLarge ? 'py-4' : 'py-3';
+                return `
+                    <div onclick="toggleGoogleTask('${t.id}')" class="${padClass} flex items-start justify-between gap-3 cursor-pointer group">
+                        <div class="flex items-start gap-3.5 min-w-0 flex-1">
+                            <button type="button" class="mt-0.5 w-5 h-5 shrink-0 border-stark flex items-center justify-center font-mono text-xs font-bold ${
+                                t.done ? 'bg-bw-ink text-bw-bg animate-popCheck' : 'bg-bw-bg text-transparent'
+                            }">
+                                ✓
+                            </button>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium leading-snug ${
+                                    t.done ? 'line-through text-bw-muted' : 'text-bw-ink'
+                                }">${escapeHtml(t.title)}</p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-bw-surface border border-bw-hairline text-bw-muted">
+                                        ${escapeHtml(t.source)}
+                                    </span>
+                                    <span class="font-mono text-[10px] text-bw-muted">
+                                        ${escapeHtml(t.dueLabel)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="font-mono text-[9px] uppercase tracking-widest px-1.5 py-0.5 border ${
+                            t.done ? 'border-bw-hairline text-bw-muted' : 'border-bw-ink text-bw-ink font-bold'
+                        }">
+                            ${t.done ? 'DONE' : 'EXEC'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildScheduleHtml() {
+            const now = new Date();
+            const currentHm = now.toTimeString().slice(0, 5);
+
+            return state.schedule.map(ev => {
+                const isCurrent = currentHm >= ev.time && currentHm <= (ev.endTime || '23:59');
+                return `
+                    <div class="p-3 border-stark bg-bw-bg border-l-4 border-l-bw-ink flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-bold text-bw-ink">
+                                    ${escapeHtml(ev.time)} — ${escapeHtml(ev.endTime || '')}
+                                </span>
+                                ${isCurrent ? '<span class="font-mono text-[9px] font-bold px-1.5 py-0.5 bg-bw-ink text-bw-bg">NOW</span>' : ''}
+                            </div>
+                            <p class="text-xs font-semibold text-bw-ink mt-1 truncate">
+                                ${escapeHtml(ev.title)}
+                            </p>
+                            <span class="font-mono text-[9px] uppercase tracking-wider text-bw-muted block mt-0.5">
+                                ${escapeHtml(ev.location || 'SCHEDULED')}
+                            </span>
+                        </div>
+                        <span class="font-mono text-[9px] font-bold uppercase px-2 py-1 border border-bw-ink shrink-0">
+                            ${escapeHtml(ev.source)}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildVelocityBarsHtml(stats) {
+            return weekCtx.days.map((d, idx) => {
+                const pct = stats.pctPerDay[idx];
+                const cnt = stats.countsPerDay[idx];
+                const isSel = idx === selectedDayIdx;
+                const barH = pct === 0 ? 6 : pct;
+
+                return `
+                    <button type="button" onclick="selectDay(${idx})" class="flex flex-col items-center justify-end h-full w-full focus:outline-none">
+                        <span class="font-mono text-[9px] mb-1 ${isSel ? 'font-bold text-bw-ink' : 'text-bw-muted'}">
+                            ${cnt}/${stats.totalRituals}
+                        </span>
+                        <div class="w-full h-16 bg-bw-bg border ${isSel ? 'border-bw-ink' : 'border-bw-hairline'} p-[2px] flex items-end">
+                            <div class="w-full transition-all duration-300 ${pct > 0 ? 'bg-bw-ink' : 'bg-bw-inactive'}" style="height:${barH}%;"></div>
+                        </div>
+                        <span class="font-mono text-[9px] mt-1 ${isSel ? 'font-bold underline underline-offset-2' : 'text-bw-muted'}">
+                            ${d.short}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function buildMatrixRowsHtml() {
+            return state.rituals.map(r => {
+                const squares = r.days.map((done, dIdx) => {
+                    const isSel = dIdx === selectedDayIdx;
+                    return `
+                        <button
+                            type="button"
+                            onclick="toggleRitualOnDay('${r.id}', ${dIdx})"
+                            title="${escapeHtml(r.name)} (${MED_DAYS[dIdx]})"
+                            class="w-3.5 h-3.5 border transition-transform active:scale-90 ${
+                                done
+                                    ? 'bg-bw-ink border-bw-ink'
+                                    : 'bg-bw-bg border-bw-inactive hover:border-bw-ink'
+                            } ${isSel ? 'ring-1 ring-bw-ink ring-offset-1' : ''}"
+                        ></button>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="grid grid-cols-12 items-center gap-1 py-0.5">
+                        <span class="col-span-5 text-[11px] font-medium truncate pr-2">${escapeHtml(r.name)}</span>
+                        <div class="col-span-7 grid grid-cols-7 justify-items-center">${squares}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* ============================================================================
+           6. MASTER RENDER FUNCTION (SYNCS MOBILE, TABLET & DESKTOP SIMULTANEOUSLY)
+           ============================================================================ */
+        function renderAll() {
+            applyViewportMode();
+            const stats = computeStats();
+            const dayMeta = weekCtx.days[selectedDayIdx];
+            const doneToday = stats.countsPerDay[selectedDayIdx];
+            const pctToday = stats.pctPerDay[selectedDayIdx];
+
+            const stripHtml = buildDayStripHtml(stats);
+            const velBarsHtml = buildVelocityBarsHtml(stats);
+            const matrixHtml = buildMatrixRowsHtml();
+            const scheduleHtml = buildScheduleHtml();
+
+            // --- 1. MOBILE RENDER ---
+            document.getElementById('mob-date-label').textContent =
+                `${dayMeta.med} · ${dayMeta.dateNum} ${dayMeta.monthShort}${dayMeta.isToday ? ' · TODAY' : ''}`;
+            document.getElementById('mob-ratio-badge').textContent =
+                `${pctToday}% // ${doneToday} OF ${stats.totalRituals}`;
+            document.getElementById('mob-streak-sub').textContent =
+                `ACTIVE STREAK: ${stats.activeStreak}D · ${stats.pendingTasksCount} TASKS LEFT`;
+            document.getElementById('mob-progress-bar').style.width = `${pctToday}%`;
+            document.getElementById('mob-day-strip').innerHTML = stripHtml;
+            document.getElementById('mob-rituals-list').innerHTML = buildRitualsListHtml(true);
+            document.getElementById('mob-tasks-list').innerHTML = buildTasksListHtml(true);
+            document.getElementById('mob-tasks-counter').textContent = `${stats.pendingTasksCount} PENDING`;
+            document.getElementById('mob-schedule-list').innerHTML = scheduleHtml;
+            document.getElementById('mob-vel-avg').textContent = `${stats.weeklyVelocityPct}% AVG`;
+            document.getElementById('mob-velocity-bars').innerHTML = velBarsHtml;
+            document.getElementById('mob-matrix-rows').innerHTML = matrixHtml;
+
+            // --- 2. TABLET RENDER ---
+            document.getElementById('tab-date-heading').textContent =
+                `${dayMeta.full}, ${dayMeta.dateNum} ${dayMeta.monthShort}`;
+            document.getElementById('tab-completion-pill').textContent =
+                `${pctToday}% RITUALS (${doneToday}/${stats.totalRituals})`;
+            document.getElementById('tab-day-strip').innerHTML = stripHtml;
+            document.getElementById('tab-schedule-list').innerHTML = scheduleHtml;
+            document.getElementById('tab-vel-badge').textContent = `${stats.weeklyVelocityPct}% VELOCITY`;
+            document.getElementById('tab-velocity-bars').innerHTML = velBarsHtml;
+            document.getElementById('tab-matrix-rows').innerHTML = matrixHtml;
+            document.getElementById('tab-rituals-list').innerHTML = buildRitualsListHtml(false);
+            document.getElementById('tab-tasks-list').innerHTML = buildTasksListHtml(false);
+            document.getElementById('tab-tasks-summary').textContent =
+                `${stats.pendingTasksCount} OPEN // ${state.tasks.length - stats.pendingTasksCount} COMPLETED`;
+
+            // --- 3. DESKTOP RENDER ---
+            document.getElementById('desk-ritual-score').textContent =
+                `${doneToday}/${stats.totalRituals} (${pctToday}%)`;
+            document.getElementById('desk-day-strip').innerHTML = stripHtml;
+            document.getElementById('desk-rituals-list').innerHTML = buildRitualsListHtml(false);
+            document.getElementById('desk-vel-pct').textContent = `${stats.weeklyVelocityPct}% AVG`;
+            document.getElementById('desk-velocity-bars').innerHTML = velBarsHtml;
+            document.getElementById('desk-matrix-rows').innerHTML = matrixHtml;
+            document.getElementById('desk-tasks-count').textContent = `${stats.pendingTasksCount} PENDING`;
+            document.getElementById('desk-tasks-list').innerHTML = buildTasksListHtml(false);
+            document.getElementById('desk-schedule-list').innerHTML = scheduleHtml;
+        }
+
+        /* ============================================================================
+           7. TWO-WAY EXECUTION ACTIONS + LIVE GOOGLE TASKS PATCH API
+           ============================================================================ */
+        function selectDay(idx) {
+            selectedDayIdx = idx;
+            renderAll();
+        }
+
+        async function patchGoogleTaskStatus(listId, googleTaskId, isCompleted) {
+            if (!googleAccessToken || !googleTaskId) return;
+            try {
+                await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(listId)}/tasks/${encodeURIComponent(googleTaskId)}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${googleAccessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: isCompleted ? 'completed' : 'needsAction'
+                    })
+                });
+            } catch (e) {
+                console.warn('Google Tasks PATCH sync warning:', e);
+            }
+        }
+
+        function toggleRitual(ritualId) {
+            toggleRitualOnDay(ritualId, selectedDayIdx);
+        }
+
+        function toggleRitualOnDay(ritualId, dayIdx) {
+            const r = state.rituals.find(item => item.id === ritualId);
+            if (!r) return;
+            r.days[dayIdx] = !r.days[dayIdx];
+            const isNowDone = r.days[dayIdx];
+            playTactileClick(isNowDone);
+            saveState();
+            renderAll();
+
+            if (r.googleTaskId && dayIdx === weekCtx.todayIdx) {
+                patchGoogleTaskStatus(state.habitsListId || '@default', r.googleTaskId, isNowDone);
+                showToast(isNowDone ? 'PATCHED -> GOOGLE TASKS [DONE]' : 'PATCHED -> [OPEN]');
+            } else {
+                showToast(isNowDone ? 'RITUAL LOGGED [✓]' : 'RITUAL UNCHECKED');
+            }
+        }
+
+        function markAllRitualsForSelectedDay() {
+            const allDone = state.rituals.every(r => r.days[selectedDayIdx]);
+            state.rituals.forEach(r => {
+                r.days[selectedDayIdx] = !allDone;
+            });
+            playTactileClick(!allDone);
+            saveState();
+            renderAll();
+            showToast(!allDone ? 'ALL RITUALS COMPLETED' : 'DAY CLEARED');
+        }
+
+        function toggleGoogleTask(taskId) {
+            const t = state.tasks.find(item => item.id === taskId);
+            if (!t) return;
+            t.done = !t.done;
+            playTactileClick(t.done);
+            saveState();
+            renderAll();
+
+            if (t.googleTaskId) {
+                patchGoogleTaskStatus(state.tasksListId || '@default', t.googleTaskId, t.done);
+                showToast(t.done ? 'SYNCED TO GOOGLE TASKS [✓]' : 'REOPENED IN GOOGLE TASKS');
+            } else {
+                showToast(t.done ? 'TASK COMPLETED [✓]' : 'TASK REOPENED');
+            }
+        }
+
+        /* ============================================================================
+           8. GOOGLE OAUTH 2.0 FETCH (GCAL + NOTION CAL + GOOGLE TASKS LISTS)
+           ============================================================================ */
+        function authorizeGoogleWorkspace() {
+            const clientIdInput = document.getElementById('oauth-client-id').value.trim();
+            if (!clientIdInput) {
+                showToast('ENTER OAUTH CLIENT ID FIRST');
+                return;
+            }
+            state.clientId = clientIdInput;
+            saveState();
+
+            if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
+                showToast('GOOGLE SDK LOADING...');
+                return;
+            }
+
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: clientIdInput,
+                scope: 'https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/calendar.readonly',
+                callback: async (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        googleAccessToken = tokenResponse.access_token;
+                        document.getElementById('sync-status-label').textContent = 'LIVE // GOOGLE SYNCED';
+                        document.getElementById('oauth-modal').classList.add('hidden');
+                        document.getElementById('oauth-modal').classList.remove('flex');
+                        await pullLiveGoogleWorkspaceData();
+                    }
+                }
+            });
+
+            tokenClient.requestAccessToken();
+        }
+
+        async function pullLiveGoogleWorkspaceData() {
+            if (!googleAccessToken) {
+                showToast('DEMO REFRESHED // CONNECT OAUTH FOR LIVE CLOUD');
+                renderAll();
+                return;
+            }
+
+            showToast('SYNCING GCAL + NOTION + GTASKS...');
+            try {
+                // 1. Pull Primary Google Calendar Events (includes Notion Calendar blocks)
+                const selDay = weekCtx.days[selectedDayIdx];
+                const startIso = new Date(selDay.iso + 'T00:00:00').toISOString();
+                const endIso = new Date(selDay.iso + 'T23:59:59').toISOString();
+
+                const calRes = await fetch(
+                    `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(startIso)}&timeMax=${encodeURIComponent(endIso)}&singleEvents=true&orderBy=startTime`,
+                    { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
+                );
+                const calJson = await calRes.json();
+                if (Array.isArray(calJson.items) && calJson.items.length > 0) {
+                    state.schedule = calJson.items.map((ev, i) => {
+                        const st = ev.start && ev.start.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0, 5) : 'ALL DAY';
+                        const et = ev.end && ev.end.dateTime ? new Date(ev.end.dateTime).toTimeString().slice(0, 5) : '';
+                        return {
+                            id: ev.id || 'cal-' + i,
+                            time: st,
+                            endTime: et,
+                            title: ev.summary || 'Scheduled Block',
+                            source: (ev.organizer && String(ev.organizer.email).includes('notion')) ? 'NOTION CAL' : 'GCAL',
+                            location: ev.location || 'GOOGLE CALENDAR'
+                        };
+                    });
+                }
+
+                // 2. Pull Google Task Lists (Look for 'Habits' list and default Tasks list)
+                const listsRes = await fetch(
+                    'https://tasks.googleapis.com/tasks/v1/users/@me/lists',
+                    { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
+                );
+                const listsJson = await listsRes.json();
+                let habitsList = null;
+                let defaultList = null;
+
+                if (Array.isArray(listsJson.items)) {
+                    habitsList = listsJson.items.find(l => l.title.toLowerCase().includes('habit') || l.title.toLowerCase().includes('ritual'));
+                    defaultList = listsJson.items[0];
+                }
+
+                if (defaultList) {
+                    state.tasksListId = defaultList.id;
+                    const tRes = await fetch(
+                        `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(defaultList.id)}/tasks?showCompleted=true`,
+                        { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
+                    );
+                    const tJson = await tRes.json();
+                    if (Array.isArray(tJson.items) && tJson.items.length > 0) {
+                        state.tasks = tJson.items
+                            .filter(item => item.title && item.title.trim())
+                            .map(item => ({
+                                id: 'gt-' + item.id,
+                                googleTaskId: item.id,
+                                title: item.title,
+                                dueLabel: item.due ? `DUE // ${item.due.slice(0, 10)}` : 'GOOGLE TASKS // GEMINI',
+                                source: 'GOOGLE TASKS',
+                                done: item.status === 'completed'
+                            }));
+                    }
+                }
+
+                if (habitsList) {
+                    state.habitsListId = habitsList.id;
+                    const hRes = await fetch(
+                        `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(habitsList.id)}/tasks?showCompleted=true`,
+                        { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
+                    );
+                    const hJson = await hRes.json();
+                    if (Array.isArray(hJson.items) && hJson.items.length > 0) {
+                        state.rituals = hJson.items
+                            .filter(item => item.title && item.title.trim())
+                            .map((item, idx) => {
+                                const existing = state.rituals[idx];
+                                const daysArr = existing ? existing.days : [false, false, false, false, false, false, false];
+                                daysArr[weekCtx.todayIdx] = item.status === 'completed';
+                                return {
+                                    id: 'rit-' + item.id,
+                                    googleTaskId: item.id,
+                                    name: item.title,
+                                    category: 'HABITS LIST',
+                                    days: daysArr
+                                };
+                            });
+                    }
+                }
+
+                saveState();
+                renderAll();
+                showToast('GOOGLE CLOUD SYNC COMPLETE');
+            } catch (err) {
+                console.error(err);
+                showToast('SYNC ERROR // CHECK CONSOLE');
+            }
+        }
+
+        /* ============================================================================
+           9. EVENT LISTENERS, CLOCK TELEMETRY & KEYBOARD SHORTCUTS
+           ============================================================================ */
+        function switchMobileSubTab(tabName) {
+            activeMobileTab = tabName;
+            const titles = {
+                rituals: '01 // DAILY RITUALS',
+                tasks: '02 // GOOGLE TASKS',
+                schedule: '03 // TODAY SCHEDULE',
+                matrix: '04 // 7D STREAK MATRIX'
+            };
+            document.getElementById('mob-pane-title').textContent = titles[tabName] || '01 // DAILY RITUALS';
+
+            ['rituals', 'tasks', 'schedule', 'matrix'].forEach(t => {
+                const viewEl = document.getElementById('mob-view-' + t);
+                if (t === tabName) viewEl.classList.remove('hidden');
+                else viewEl.classList.add('hidden');
+            });
+
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                const isAct = btn.getAttribute('data-mob-tab') === tabName;
+                btn.className = `mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider border-r border-bw-hairline ${
+                    isAct ? 'bg-bw-ink text-bw-bg' : 'bg-bw-bg text-bw-ink'
+                }`;
+            });
+        }
+
+        function updateLiveTelemetryClock() {
+            const now = new Date();
+            const timeStr = now.toTimeString().slice(0, 8);
+            const shortTime = now.toTimeString().slice(0, 5);
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase();
+            const deskClock = document.getElementById('desk-live-clock');
+            const mobClock = document.getElementById('mob-now-clock');
+            if (deskClock) deskClock.textContent = `${dateStr} // ${timeStr}`;
+            if (mobClock) mobClock.textContent = `NOW // ${shortTime}`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Viewport Mode Switcher Buttons
+            document.querySelectorAll('.vp-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    viewportMode = btn.getAttribute('data-vp');
+                    renderAll();
+                });
+            });
+
+            // Mobile Bottom Navigation Buttons
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchMobileSubTab(btn.getAttribute('data-mob-tab'));
+                });
+            });
+
+            // Window Resize Listener for AUTO mode
+            window.addEventListener('resize', () => {
+                if (viewportMode === 'auto') applyViewportMode();
+            });
+
+            // OAuth Modal Controls
+            const oauthModal = document.getElementById('oauth-modal');
+            document.getElementById('btn-open-oauth').addEventListener('click', () => {
+                document.getElementById('oauth-client-id').value = state.clientId || '';
+                oauthModal.classList.remove('hidden');
+                oauthModal.classList.add('flex');
+            });
+            document.getElementById('btn-close-oauth').addEventListener('click', () => {
+                oauthModal.classList.add('hidden');
+                oauthModal.classList.remove('flex');
+            });
+            document.getElementById('btn-authorize-google').addEventListener('click', authorizeGoogleWorkspace);
+
+            document.getElementById('btn-reset-demo').addEventListener('click', () => {
+                state = getDefaultState();
+                selectedDayIdx = weekCtx.todayIdx;
+                saveState();
+                renderAll();
+                oauthModal.classList.add('hidden');
+                oauthModal.classList.remove('flex');
+                showToast('DEMO DATA RESTORED');
+            });
+
+            document.getElementById('btn-refresh-sync').addEventListener('click', () => {
+                pullLiveGoogleWorkspaceData();
+            });
+
+            // Desktop Keyboard Shortcuts ([1-5] toggle rituals, [R] refresh sync, [Left/Right] select day)
+            window.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                if (e.key >= '1' && e.key <= '5') {
+                    const idx = parseInt(e.key, 10) - 1;
+                    if (state.rituals[idx]) {
+                        toggleRitual(state.rituals[idx].id);
+                    }
+                } else if (e.key.toLowerCase() === 'r') {
+                    e.preventDefault();
+                    pullLiveGoogleWorkspaceData();
+                } else if (e.key === 'ArrowLeft') {
+                    selectedDayIdx = Math.max(0, selectedDayIdx - 1);
+                    renderAll();
+                } else if (e.key === 'ArrowRight') {
+                    selectedDayIdx = Math.min(6, selectedDayIdx + 1);
+                    renderAll();
+                } else if (e.key === 'Escape') {
+                    oauthModal.classList.add('hidden');
+                    oauthModal.classList.remove('flex');
+                }
+            });
+
+            updateLiveTelemetryClock();
+            setInterval(updateLiveTelemetryClock, 1000);
+            renderAll();
+        });
+    </script>
+</body>
+</html>
