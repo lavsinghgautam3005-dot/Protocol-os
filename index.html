@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>PROTOCOL // 03 — MULTI-DEVICE EXECUTION OS</title>
-    <link rel="manifest" href="/Protocol-os/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -936,20 +936,8 @@
         let state = JSON.parse(localStorage.getItem('protocol03_state')) || {
             clientId: '',
             habits: createSeededHabits(),
-            events: [
-                { time: '07:30', title: 'Morning Calisthenics & 2kg Shoulder Protocol', source: 'GCAL' },
-                { time: '10:00', title: 'AI/ML Core Lecture & Mid-Term Exam Revision', source: 'NOTION CAL' },
-                { time: '14:00', title: 'Java Programming & Discrete Structures', source: 'NOTION CAL' },
-                { time: '17:30', title: 'DSA & LeetCode Problem Solving Sprint', source: 'GCAL' },
-                { time: '21:00', title: 'Evening Protocol Review & Next-Day Planning', source: 'GCAL' }
-            ],
-            tasks: [
-                { id: 't1', title: 'Revise Discrete Mathematics — Graph Theory & Trees', done: true, key: 'q' },
-                { id: 't2', title: 'Complete Java Object-Oriented Quiz Prep & Lab', done: true, key: 'w' },
-                { id: 't3', title: 'Organize AI/ML Mid-Term Exam Summary in NotebookLM', done: true, key: 'e' },
-                { id: 't4', title: 'Push Updated Portfolio & Habit OS Repo to GitHub Pages', done: false, key: 'a' },
-                { id: 't5', title: 'Solve 2 Medium LeetCode Array / DP Problems', done: false, key: 's' }
-            ]
+            events: [],
+            tasks: []
         };
 
         const totalHistoryEntries = state.habits.reduce((acc, h) => acc + Object.keys(h.history || {}).length, 0);
@@ -1095,25 +1083,29 @@
 
             const pendingTasks = state.tasks.filter(t => !t.done).length;
             document.getElementById('taskCountLabel').textContent = `${pendingTasks} PENDING`;
-            document.getElementById('taskList').innerHTML = state.tasks.map((t) => `
-                <div class="list-row ${t.done ? 'done' : ''}" onclick="toggleTask('${t.id}')">
-                    <div class="row-left">
-                        <div class="checkbox-sq mono">${t.done ? '✓' : ''}</div>
-                        <span class="item-label">${t.title} ${t.key ? `<span class="key-badge mono">[${t.key.toUpperCase()}]</span>` : ''}</span>
+            document.getElementById('taskList').innerHTML = state.tasks.length > 0 
+                ? state.tasks.map((t) => `
+                    <div class="list-row ${t.done ? 'done' : ''}" onclick="toggleTask('${t.id}')">
+                        <div class="row-left">
+                            <div class="checkbox-sq mono">${t.done ? '✓' : ''}</div>
+                            <span class="item-label">${t.title} ${t.key ? `<span class="key-badge mono">[${t.key.toUpperCase()}]</span>` : ''}</span>
+                        </div>
+                        <span class="event-tag mono">${t.done ? 'DONE' : 'EXEC'}</span>
                     </div>
-                    <span class="event-tag mono">${t.done ? 'DONE' : 'EXEC'}</span>
-                </div>
-            `).join('');
+                `).join('')
+                : `<div class="mono" style="font-size:11px;padding:12px;color:var(--muted);text-align:center;">No pending tasks</div>`;
 
-            document.getElementById('calendarList').innerHTML = state.events.map(ev => `
-                <div class="event-card">
-                    <div>
-                        <div class="event-time mono">${ev.time}</div>
-                        <div class="event-title">${ev.title}</div>
+            document.getElementById('calendarList').innerHTML = state.events.length > 0
+                ? state.events.map(ev => `
+                    <div class="event-card">
+                        <div>
+                            <div class="event-time mono">${ev.time}</div>
+                            <div class="event-title">${ev.title}</div>
+                        </div>
+                        <span class="event-tag mono">${ev.source}</span>
                     </div>
-                    <span class="event-tag mono">${ev.source}</span>
-                </div>
-            `).join('');
+                `).join('')
+                : `<div class="mono" style="font-size:11px;padding:12px;color:var(--muted);text-align:center;">No scheduled blocks for today</div>`;
 
             if (document.getElementById('streakAnalyticsModal').classList.contains('active')) {
                 renderPriorityBriefOverlay();
@@ -1249,12 +1241,30 @@
             }
         }
 
-        function toggleTask(id) {
+        async function toggleTask(id) {
             const t = state.tasks.find(x => x.id === id);
             if (t) {
                 t.done = !t.done;
                 if (navigator.vibrate) navigator.vibrate(10);
                 saveState();
+
+                // Live PATCH completion status directly to Google Tasks API
+                if (accessToken && !t.id.startsWith('t_')) {
+                    try {
+                        await fetch(`https://tasks.googleapis.com/tasks/v1/lists/@default/tasks/${t.id}`, {
+                            method: 'PATCH',
+                            headers: {
+                                Authorization: `Bearer ${accessToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                status: t.done ? 'completed' : 'needsAction'
+                            })
+                        });
+                    } catch (e) {
+                        console.error("Failed to patch Google Task:", e);
+                    }
+                }
             }
         }
 
@@ -1797,62 +1807,114 @@
             }
         }
 
-        function connectGoogleAccount() {
-            const cid = document.getElementById('clientIdInput').value.trim();
-            if (!cid) return;
-            state.clientId = cid;
-            saveState();
+        // AUTOMATIC BACKGROUND TOKEN & SYNC ENGINE
+        function initGoogleClient(silent = false) {
+            const cid = state.clientId || localStorage.getItem('protocol03_client_id');
+            if (!cid || typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) return;
 
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: cid,
                 scope: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks',
+                prompt: silent ? '' : 'select_account',
                 callback: async (resp) => {
                     if (resp.access_token) {
                         accessToken = resp.access_token;
-                        document.getElementById('syncLabel').textContent = 'LIVE';
+                        const expiresAt = Date.now() + ((resp.expires_in || 3599) * 1000) - 60000;
+                        localStorage.setItem('protocol03_gtoken', JSON.stringify({ token: accessToken, expiresAt }));
+                        
+                        const syncLabel = document.getElementById('syncLabel');
+                        if (syncLabel) syncLabel.textContent = 'LIVE';
                         closeSyncModal();
-                        fetchGoogleCalendarAndTasks();
+                        await fetchGoogleCalendarAndTasks();
                     }
                 }
             });
-            tokenClient.requestAccessToken();
+
+            if (silent) {
+                tokenClient.requestAccessToken({ prompt: '' });
+            }
+        }
+
+        function connectGoogleAccount() {
+            const cid = document.getElementById('clientIdInput').value.trim();
+            if (!cid) return;
+            state.clientId = cid;
+            localStorage.setItem('protocol03_client_id', cid);
+            saveState();
+
+            initGoogleClient(false);
+            if (tokenClient) tokenClient.requestAccessToken();
+        }
+
+        async function ensureValidAccessToken() {
+            const saved = localStorage.getItem('protocol03_gtoken');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.token && Date.now() < parsed.expiresAt) {
+                        accessToken = parsed.token;
+                        const syncLabel = document.getElementById('syncLabel');
+                        if (syncLabel) syncLabel.textContent = 'LIVE';
+                        return true;
+                    }
+                } catch(e) {}
+            }
+            if (state.clientId || localStorage.getItem('protocol03_client_id')) {
+                initGoogleClient(true);
+            }
+            return false;
         }
 
         async function fetchGoogleCalendarAndTasks() {
-            if (!accessToken) return;
+            if (!accessToken) {
+                const valid = await ensureValidAccessToken();
+                if (!valid) return;
+            }
+
             try {
                 const now = new Date();
                 const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
                 const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
 
+                // 1. Fetch Today's Google Calendar & Notion-synced Events
                 const calRes = await fetch(
                     `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${startOfDay}&timeMax=${endOfDay}&singleEvents=true&orderBy=startTime`,
                     { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
+                
+                if (calRes.status === 401) {
+                    localStorage.removeItem('protocol03_gtoken');
+                    accessToken = null;
+                    initGoogleClient(true);
+                    return;
+                }
+
                 const calData = await calRes.json();
                 if (calData.items) {
                     state.events = calData.items.map(ev => ({
                         time: ev.start.dateTime ? ev.start.dateTime.slice(11, 16) : 'ALL DAY',
                         title: ev.summary || 'Untitled Event',
-                        source: 'GCAL LIVE'
+                        source: ev.description && ev.description.includes('Notion') ? 'NOTION CAL' : 'GCAL LIVE'
                     }));
                 }
 
+                // 2. Fetch Google Tasks
                 const taskRes = await fetch(
                     'https://tasks.googleapis.com/tasks/v1/lists/@default/tasks?showCompleted=true',
                     { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 const taskData = await taskRes.json();
                 if (taskData.items) {
-                    state.tasks = taskData.items.map(t => ({
+                    state.tasks = taskData.items.map((t, idx) => ({
                         id: t.id,
                         title: t.title || 'Untitled Task',
-                        done: t.status === 'completed'
+                        done: t.status === 'completed',
+                        key: ['q', 'w', 'e', 'a', 's'][idx] || ''
                     }));
                 }
                 saveState();
             } catch (err) {
-                console.error("Google Sync Failed:", err);
+                console.error("Auto-sync background error:", err);
             }
         }
 
@@ -1891,6 +1953,17 @@
         applyEffectiveTheme();
         updateLiveClock();
         renderAll();
+
+        // RUN AUTO-SYNC ON STARTUP + POLL EVERY 2 MINUTES
+        window.addEventListener('load', async () => {
+            await ensureValidAccessToken();
+            if (accessToken) {
+                await fetchGoogleCalendarAndTasks();
+            }
+            setInterval(() => {
+                fetchGoogleCalendarAndTasks();
+            }, 120000);
+        });
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
