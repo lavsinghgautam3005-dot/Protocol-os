@@ -64,6 +64,7 @@
             letter-spacing: -0.03em;
         }
 
+        /* DESKTOP HEADER */
         header {
             border-bottom: var(--border-strong);
             height: 48px;
@@ -112,59 +113,6 @@
             display: flex;
             align-items: center;
             gap: 6px;
-        }
-
-        /* MOBILE FIX: Prevents top header and card overflow on phones */
-        @media (max-width: 767px) {
-            header {
-                padding: 0 10px;
-                height: 44px;
-            }
-            .brand {
-                gap: 6px;
-            }
-            .brand-badge {
-                font-size: 10px;
-                padding: 2px 5px;
-            }
-            .sync-controls {
-                gap: 4px;
-            }
-            .btn-bw {
-                padding: 4px 6px;
-                font-size: 9px;
-            }
-            .header-center, 
-            header button[onclick="openShortcutsModal()"] {
-                display: none !important;
-            }
-            .pane {
-                padding: 12px 14px 80px;
-                gap: 12px;
-            }
-            .streak-card-box {
-                padding: 10px;
-            }
-            .streak-week-page {
-                padding: 0 4px;
-            }
-            .barchart-container, 
-            .barchart-labels {
-                max-width: 100%;
-                gap: 2px;
-            }
-            .day-strip {
-                gap: 3px;
-            }
-            .day-pill {
-                padding: 5px 2px;
-            }
-            .day-name {
-                font-size: 8px;
-            }
-            .day-num {
-                font-size: 11px;
-            }
         }
 
         .btn-bw {
@@ -219,6 +167,7 @@
             margin: 0 auto;
         }
 
+        /* TABLET SPLIT (768px - 1119px) */
         @media (min-width: 768px) and (max-width: 1119px) {
             .workspace {
                 grid-template-columns: 1fr 1fr;
@@ -233,6 +182,7 @@
             }
         }
 
+        /* DESKTOP 3-COLUMN (>= 1120px) */
         @media (min-width: 1120px) {
             .workspace {
                 grid-template-columns: 1.1fr 1fr 0.9fr;
@@ -301,6 +251,7 @@
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             cursor: grab;
+            direction: ltr;
         }
 
         .streak-carousel-viewport:active {
@@ -317,7 +268,7 @@
             scroll-snap-align: start;
             display: flex;
             flex-direction: column;
-            padding: 0 12px;
+            padding: 0 8px;
         }
 
         .week-nav-row {
@@ -667,6 +618,87 @@
             overflow-y: auto;
             white-space: pre-wrap;
         }
+
+        /* --- MOBILE LAYOUT OVERRIDES (< 768px) --- */
+        @media (max-width: 767px) {
+            header {
+                padding: 0 10px;
+                height: 44px;
+                gap: 6px;
+            }
+            .brand {
+                gap: 4px;
+            }
+            .brand-badge {
+                font-size: 9px;
+                padding: 2px 4px;
+            }
+            .brand span.mono {
+                font-size: 10px !important;
+            }
+            .header-center,
+            #shortcutsModalBtn {
+                display: none !important;
+            }
+            .sync-controls {
+                gap: 4px;
+            }
+            .btn-bw {
+                padding: 4px 6px;
+                font-size: 9px;
+                letter-spacing: 0;
+            }
+            .pane {
+                padding: 10px 12px 75px !important;
+                gap: 12px;
+            }
+            .streak-card-box {
+                padding: 10px;
+                overflow: hidden;
+            }
+            .streak-week-page {
+                padding: 0 2px !important;
+            }
+            .barchart-container {
+                height: 95px !important;
+                max-width: 100% !important;
+                padding-top: 6px;
+                gap: 2px;
+                justify-content: space-between;
+            }
+            .barchart-bar {
+                max-width: 8px !important;
+                min-height: 8px;
+            }
+            .barchart-labels {
+                max-width: 100% !important;
+                padding-top: 4px;
+                gap: 2px;
+                justify-content: space-between;
+            }
+            .barchart-label-col {
+                font-size: 8px;
+            }
+            .day-strip {
+                gap: 3px !important;
+            }
+            .day-pill {
+                padding: 5px 1px !important;
+            }
+            .day-name {
+                font-size: 7px;
+            }
+            .day-num {
+                font-size: 11px;
+            }
+            .mobile-tabs {
+                height: 52px;
+            }
+            .m-tab {
+                padding: 14px 0 !important;
+                font-size: 9px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -680,7 +712,7 @@
         <div class="sync-controls">
             <button class="btn-bw mono" id="themeToggleBtn" onclick="cycleThemePreference()" title="Follows System Theme automatically (Click to test Light/Dark)">◐ AUTO</button>
             <button class="btn-bw mono" onclick="openTerminal()" title="Gemini AI Command Terminal">✦ GEMINI</button>
-            <button class="btn-bw mono" onclick="openShortcutsModal()" title="Keyboard Shortcuts">[?]</button>
+            <button class="btn-bw mono" id="shortcutsModalBtn" onclick="openShortcutsModal()" title="Keyboard Shortcuts">[?]</button>
             <button class="btn-bw mono" id="syncBtn" onclick="openSyncModal()"><span class="status-dot"></span><span id="syncLabel">SYNC</span></button>
         </div>
     </header>
@@ -1301,7 +1333,6 @@
                 if (navigator.vibrate) navigator.vibrate(10);
                 saveState();
 
-                // Live PATCH completion status directly to Google Tasks API
                 if (accessToken && !t.id.startsWith('t_')) {
                     try {
                         await fetch(`https://tasks.googleapis.com/tasks/v1/lists/@default/tasks/${t.id}`, {
@@ -1326,6 +1357,7 @@
             document.getElementById('pane-' + paneName).classList.add('active-mobile');
             document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
             if (el) el.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function openTerminal() { document.getElementById('terminalModal').classList.add('active'); }
