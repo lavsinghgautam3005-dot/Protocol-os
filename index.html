@@ -2,1397 +2,1889 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#FFFFFF">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#FFFFFF" id="metaThemeColor">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="PROTOCOL // 03">
-    <meta name="mobile-web-app-capable" content="yes">
     <title>PROTOCOL // 03 — MULTI-DEVICE EXECUTION OS</title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Google Identity Services OAuth 2.0 -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-    <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        bw: {
-                            bg: '#FFFFFF',
-                            ink: '#000000',
-                            muted: '#71717A',
-                            hairline: '#E4E4E7',
-                            surface: '#FAFAFA',
-                            inactive: '#D4D4D8'
-                        }
-                    },
-                    keyframes: {
-                        popCheck: {
-                            '0%': { transform: 'scale(0.84)' },
-                            '50%': { transform: 'scale(1.12)' },
-                            '100%': { transform: 'scale(1)' }
-                        }
-                    },
-                    animation: {
-                        popCheck: 'popCheck 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                    }
-                }
-            }
-        }
-    </script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
+        /* LIGHT THEME (DEFAULT) — Pure White Background & Solid Black Ink */
+        :root,
+        [data-theme="light"] {
+            --bg: #FFFFFF;
+            --ink: #000000;
+            --muted: #71717A;
+            --hairline: #E4E4E7;
+            --surface: #FAFAFA;
+            --surface-hover: #F4F4F5;
+            --backdrop: rgba(255, 255, 255, 0.84);
+            --shadow: rgba(0, 0, 0, 0.14);
+            --border-strong: 1.5px solid var(--ink);
+            --border-subtle: 1px solid var(--hairline);
+            color-scheme: light;
+        }
+
+        /* DARK THEME (EXACT OPPOSITE INVERSION) — Pure Black Background & Solid White Ink */
+        [data-theme="dark"] {
+            --bg: #000000;
+            --ink: #FFFFFF;
+            --muted: #A1A1AA;
+            --hairline: #27272A;
+            --surface: #0A0A0A;
+            --surface-hover: #141414;
+            --backdrop: rgba(0, 0, 0, 0.84);
+            --shadow: rgba(255, 255, 255, 0.08);
+            --border-strong: 1.5px solid var(--ink);
+            --border-subtle: 1px solid var(--hairline);
+            color-scheme: dark;
+        }
+
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            -webkit-user-select: none;
-            border-radius: 2px;
         }
-        input {
-            user-select: text;
-            -webkit-user-select: text;
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            letter-spacing: -0.02em;
+            overflow-x: hidden;
+            transition: background-color 0.18s ease, color 0.18s ease;
         }
-        html, body {
-            background-color: #FFFFFF;
-            color: #000000;
-            height: 100dvh;
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.03em;
+        }
+
+        /* 48PX SWISS TOP HEADER */
+        header {
+            border-bottom: var(--border-strong);
+            height: 48px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 50;
+            transition: background-color 0.18s ease, border-color 0.18s ease;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-badge {
+            background: var(--ink);
+            color: var(--bg);
+            font-weight: 700;
+            font-size: 11px;
+            padding: 3px 6px;
+            letter-spacing: 0.05em;
+            transition: background-color 0.18s ease, color 0.18s ease;
+        }
+
+        .header-center {
+            display: none;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+        }
+
+        @media (min-width: 768px) {
+            .header-center {
+                display: block;
+            }
+        }
+
+        .sync-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-bw {
+            background: var(--bg);
+            color: var(--ink);
+            border: var(--border-strong);
+            padding: 5px 9px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .btn-bw:hover, .btn-bw.active {
+            background: var(--ink);
+            color: var(--bg);
+        }
+
+        .btn-bw:disabled {
+            opacity: 0.25;
+            cursor: default;
+            background: var(--bg);
+            color: var(--ink);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--ink);
+            display: inline-block;
+            margin-right: 5px;
+            transition: background-color 0.12s ease;
+        }
+
+        .btn-bw:hover .status-dot {
+            background: var(--bg);
+        }
+
+        /* AUTOMATIC MULTI-DEVICE RESPONSIVE WORKSPACE */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr;
+            max-width: 1440px;
             width: 100%;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) and (max-width: 1119px) {
+            .workspace {
+                grid-template-columns: 1fr 1fr;
+            }
+            .mobile-tabs {
+                display: none !important;
+            }
+            .pane {
+                display: flex !important;
+                border-right: var(--border-subtle);
+                min-height: calc(100dvh - 48px);
+            }
+        }
+
+        @media (min-width: 1120px) {
+            .workspace {
+                grid-template-columns: 1.1fr 1fr 0.9fr;
+            }
+            .mobile-tabs {
+                display: none !important;
+            }
+            .pane {
+                display: flex !important;
+                border-right: var(--border-subtle);
+                min-height: calc(100dvh - 48px);
+            }
+        }
+
+        .pane {
+            padding: 18px 20px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        @media (max-width: 767px) {
+            .pane {
+                display: none;
+            }
+            .pane.active-mobile {
+                display: flex;
+            }
+        }
+
+        .pane-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: var(--border-strong);
+            padding-bottom: 8px;
+        }
+
+        .pane-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .pane-meta {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* 5-WEEK STREAK GRAPH CARD */
+        .streak-card-box {
+            border: var(--border-strong);
+            padding: 12px 14px;
+            background: var(--surface);
+            position: relative;
+            user-select: none;
             overflow: hidden;
-            overscroll-behavior: none;
-            -webkit-font-smoothing: antialiased;
-            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            transition: background-color 0.18s ease, border-color 0.18s ease;
         }
-        .border-stark {
-            border: 1.5px solid #000000;
+
+        .streak-carousel-viewport {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            cursor: grab;
         }
-        .border-stark-t {
-            border-top: 1.5px solid #000000;
+
+        .streak-carousel-viewport:active {
+            cursor: grabbing;
         }
-        .border-stark-b {
-            border-bottom: 1.5px solid #000000;
-        }
-        .border-stark-r {
-            border-right: 1.5px solid #000000;
-        }
-        .hairline-b {
-            border-bottom: 1px solid #E4E4E7;
-        }
-        .hairline-t {
-            border-top: 1px solid #E4E4E7;
-        }
-        .no-scrollbar::-webkit-scrollbar {
+
+        .streak-carousel-viewport::-webkit-scrollbar {
             display: none;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        .streak-week-page {
+            flex: 0 0 100%;
+            width: 100%;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            padding: 0 12px;
         }
-        /* Frame simulators when previewing Mobile or Tablet on a larger screen */
-        .preview-frame-mobile {
-            max-width: 430px;
-            margin: 0 auto;
-            border-left: 1.5px solid #000000;
-            border-right: 1.5px solid #000000;
-            height: 100%;
+
+        .week-nav-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--ink);
+            padding-bottom: 8px;
+            min-height: 30px;
+            gap: 8px;
         }
-        .preview-frame-tablet {
-            max-width: 960px;
+
+        .week-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed var(--hairline);
+        }
+
+        .ai-insight-banner {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border: 1px solid var(--ink);
+            background: var(--bg);
+            font-size: 11px;
+            line-height: 1.4;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .ai-insight-banner.active {
+            display: flex;
+        }
+
+        .ai-insight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--hairline);
+            padding-bottom: 4px;
+        }
+
+        .week-dot {
+            width: 6px;
+            height: 6px;
+            border: 1px solid var(--ink);
+            background: var(--bg);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .week-dot.active {
+            background: var(--ink);
+            width: 16px;
+        }
+
+        /* TALL SLENDER CAPSULE PILL BARS */
+        .barchart-container {
+            display: flex;
+            align-items: flex-end;
+            height: 115px;
+            padding-top: 10px;
+            gap: 4px;
+            justify-content: space-evenly;
+            max-width: 280px;
             margin: 0 auto;
-            border-left: 1.5px solid #000000;
-            border-right: 1.5px solid #000000;
+            width: 100%;
+        }
+
+        .barchart-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             height: 100%;
+            justify-content: flex-end;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .barchart-bar {
+            width: 100%;
+            max-width: 10px;
+            background: var(--ink);
+            border-radius: 9999px;
+            transition: height 0.22s ease, background-color 0.18s ease;
+            min-height: 10px;
+        }
+
+        .barchart-col:hover .barchart-bar {
+            opacity: 0.7;
+        }
+
+        .barchart-labels {
+            display: flex;
+            padding-top: 6px;
+            font-size: 9px;
+            gap: 4px;
+            justify-content: space-evenly;
+            max-width: 280px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .barchart-label-col {
+            flex: 1;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .barchart-label-col.active {
+            color: var(--ink);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        /* 7-DAY SELECTOR STRIP */
+        .day-strip {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .day-pill {
+            border: var(--border-subtle);
+            padding: 7px 3px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--bg);
+            color: var(--ink);
+            transition: 0.12s ease;
+        }
+
+        .day-pill.selected {
+            background: var(--ink);
+            color: var(--bg);
+            border-color: var(--ink);
+        }
+
+        .day-name {
+            font-size: 9px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            display: block;
+        }
+
+        .day-num {
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 1px;
+            display: block;
+        }
+
+        /* RITUALS & TASKS ROWS */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            border-top: var(--border-subtle);
+        }
+
+        .list-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 4px;
+            border-bottom: var(--border-subtle);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.1s ease;
+        }
+
+        .list-row:hover {
+            background: var(--surface-hover);
+        }
+
+        .row-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-sq {
+            width: 17px;
+            height: 17px;
+            border: var(--border-strong);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            flex-shrink: 0;
+            background: var(--bg);
+            color: var(--ink);
+            transition: all 0.12s ease;
+        }
+
+        .list-row.done .checkbox-sq {
+            background: var(--ink);
+            color: var(--bg);
+        }
+
+        .list-row.done .item-label {
+            text-decoration: line-through;
+            color: var(--muted);
+        }
+
+        .item-label {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .key-badge {
+            font-size: 9px;
+            border: 1px solid var(--hairline);
+            padding: 1px 4px;
+            background: var(--surface);
+            color: var(--muted);
+            margin-left: 6px;
+        }
+
+        /* SCHEDULE CARDS */
+        .event-card {
+            border-left: 3px solid var(--ink);
+            border-top: var(--border-subtle);
+            border-right: var(--border-subtle);
+            border-bottom: var(--border-subtle);
+            padding: 9px 11px;
+            background: var(--surface);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-time {
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .event-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .event-tag {
+            font-size: 9px;
+            border: 1px solid var(--ink);
+            padding: 1px 5px;
+            text-transform: uppercase;
+        }
+
+        /* MOBILE BOTTOM BAR */
+        .mobile-tabs {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg);
+            border-top: var(--border-strong);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            z-index: 60;
+        }
+
+        .m-tab {
+            padding: 12px 0;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-right: var(--border-subtle);
+            color: var(--ink);
+        }
+
+        .m-tab.active {
+            background: var(--ink);
+            color: var(--bg);
+        }
+
+        /* FROSTED BLUR MODALS */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: var(--backdrop);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-card {
+            border: 2px solid var(--ink);
+            background: var(--bg);
+            color: var(--ink);
+            max-width: 520px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 15px 40px var(--shadow);
+            transform: translateY(10px);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-backdrop.active .modal-card {
+            transform: translateY(0);
+        }
+
+        .terminal-textarea {
+            width: 100%;
+            border: var(--border-strong);
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            resize: none;
+            height: 90px;
+            outline: none;
+            background: var(--surface);
+            color: var(--ink);
+        }
+
+        .terminal-output {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            background: var(--surface);
+            color: var(--ink);
+            border: var(--border-subtle);
+            padding: 10px;
+            max-height: 140px;
+            overflow-y: auto;
+            white-space: pre-wrap;
         }
     </style>
 </head>
-<body class="flex flex-col h-[100dvh] bg-bw-bg text-bw-ink">
+<body>
 
-    <header class="border-stark-b bg-bw-bg px-3 sm:px-5 py-2.5 shrink-0 z-30 flex flex-wrap items-center justify-between gap-2">
-        <!-- Left: Brand Identity & Active Device Badge -->
-        <div class="flex items-center gap-2.5">
-            <span class="bg-bw-ink text-bw-bg font-mono text-[11px] font-bold px-2 py-1 tracking-widest">
-                P // 03
-            </span>
-            <div class="flex flex-col">
-                <div class="flex items-center gap-2">
-                    <span class="font-mono text-xs font-bold tracking-wider uppercase">EXECUTION OS</span>
-                    <span id="active-layout-badge" class="font-mono text-[9px] font-bold uppercase px-1.5 py-0.5 border border-bw-ink bg-bw-surface">
-                        AUTO
-                    </span>
-                </div>
-                <span class="font-mono text-[10px] text-bw-muted hidden sm:inline">
-                    READ & EXECUTE // GEMINI + GCAL + GTASKS + NOTION
-                </span>
-            </div>
+    <header>
+        <div class="brand">
+            <span class="brand-badge mono">P // 03</span>
+            <span class="mono" style="font-size:12px;font-weight:700;">EXECUTION OS</span>
         </div>
-
-        <!-- Center: Viewport Mode Switcher ([AUTO] [MOBILE] [TABLET] [DESKTOP]) -->
-        <div class="flex items-center border-stark bg-bw-bg p-0.5" role="group" aria-label="Viewport Mode Switcher">
-            <button type="button" data-vp="auto" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors bg-bw-ink text-bw-bg">
-                AUTO
-            </button>
-            <button type="button" data-vp="mobile" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors text-bw-ink hover:bg-bw-surface">
-                MOBILE
-            </button>
-            <button type="button" data-vp="tablet" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors text-bw-ink hover:bg-bw-surface">
-                TABLET
-            </button>
-            <button type="button" data-vp="desktop" class="vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors text-bw-ink hover:bg-bw-surface">
-                DESKTOP
-            </button>
-        </div>
-
-        <!-- Right: Refresh & Google Sync Status Button -->
-        <div class="flex items-center gap-1.5">
-            <button id="btn-refresh-sync" type="button" title="Refresh Google Sync [Shortcut: R]" class="border-stark px-2.5 py-1 font-mono text-[10px] font-bold uppercase bg-bw-bg text-bw-ink hover:bg-bw-ink hover:text-bw-bg active:scale-95 transition-all">
-                ↻ SYNC
-            </button>
-            <button id="btn-open-oauth" type="button" class="border-stark px-2.5 py-1 font-mono text-[10px] font-bold uppercase flex items-center gap-1.5 bg-bw-bg text-bw-ink hover:bg-bw-ink hover:text-bw-bg transition-colors">
-                <span id="sync-led" class="w-2 h-2 bg-bw-ink inline-block"></span>
-                <span id="sync-status-label">DEMO // CONNECT</span>
-            </button>
+        <div class="header-center mono" id="liveHeaderClock">THU, OCT 15 · 07:30</div>
+        <div class="sync-controls">
+            <button class="btn-bw mono" id="themeToggleBtn" onclick="cycleThemePreference()" title="Follows System Theme automatically (Click to test Light/Dark)">◐ AUTO</button>
+            <button class="btn-bw mono" onclick="openTerminal()" title="Gemini AI Command Terminal">✦ GEMINI</button>
+            <button class="btn-bw mono" onclick="openShortcutsModal()" title="Keyboard Shortcuts">[?]</button>
+            <button class="btn-bw mono" id="syncBtn" onclick="openSyncModal()"><span class="status-dot"></span><span id="syncLabel">SYNC</span></button>
         </div>
     </header>
 
-    <div id="viewport-stage" class="flex-1 overflow-hidden relative bg-bw-surface">
-
-        <!-- =======================================================================
-             INTERFACE 1: MOBILE OS (ANDROID THUMB-ZONE SINGLE-PANE ERGONOMIC SHELL)
-             ======================================================================= -->
-        <div id="layout-mobile" class="hidden h-full bg-bw-bg flex-col justify-between preview-frame-mobile">
-            <!-- Mobile Compact Header -->
-            <div class="px-4 pt-3 pb-2 border-stark-b shrink-0 bg-bw-bg">
-                <div class="flex items-baseline justify-between">
-                    <div>
-                        <span id="mob-date-label" class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-bw-muted block">
-                            WED · 14 OCT
-                        </span>
-                        <h1 id="mob-pane-title" class="text-xl font-extrabold tracking-tight text-bw-ink mt-0.5">
-                            01 // DAILY RITUALS
-                        </h1>
-                    </div>
-                    <div class="text-right">
-                        <span id="mob-ratio-badge" class="font-mono text-sm font-bold px-2 py-0.5 bg-bw-ink text-bw-bg">
-                            75% // 3 OF 4
-                        </span>
-                        <span id="mob-streak-sub" class="font-mono text-[10px] text-bw-muted block mt-1">
-                            STREAK: 5 DAYS
-                        </span>
-                    </div>
-                </div>
-
-                <!-- 2px Progress Line -->
-                <div class="w-full h-[2px] bg-bw-hairline mt-2.5 overflow-hidden">
-                    <div id="mob-progress-bar" class="h-full bg-bw-ink transition-all duration-300" style="width: 75%;"></div>
-                </div>
-
-                <!-- 7-Day Pill Selector Strip -->
-                <div id="mob-day-strip" class="grid grid-cols-7 gap-1 mt-2.5 pt-2 hairline-t">
-                    <!-- Populated via JS -->
-                </div>
+    <main class="workspace">
+        <!-- PANE 01: HABIT ENGINE WITH SLENDER CAPSULE BARS -->
+        <section class="pane active-mobile" id="pane-habits">
+            <div class="pane-header">
+                <span class="pane-title">01 // Habit Engine</span>
+                <span class="pane-meta mono" id="habitScore">0/5 (0%)</span>
             </div>
 
-            <!-- Mobile Scrollable Single-Pane Body -->
-            <div id="mob-scroll-body" class="flex-1 overflow-y-auto no-scrollbar px-4 py-3">
-                <!-- Sub-pane A: 01 RITUALS -->
-                <div id="mob-view-rituals" class="space-y-1">
-                    <div class="flex items-center justify-between py-1 hairline-b">
-                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted">
-                            SOURCE: GOOGLE TASKS [HABITS]
-                        </span>
-                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-ink font-semibold">
-                            TAP TO COMPLETE
-                        </span>
-                    </div>
-                    <div id="mob-rituals-list" class="divide-y divide-bw-hairline"></div>
+            <!-- 5-WEEK NATIVE SCROLLABLE STREAK BAR GRAPH -->
+            <div class="streak-card-box" id="streakCardBox">
+                <div class="week-nav-row">
+                    <button class="btn-bw mono" id="prevWeekBtn" style="padding:4px 8px;font-size:10px;min-width:64px;" onclick="changeWeek(-1)">← PREV</button>
+                    <span class="mono" id="weekTitleLabel" style="font-size:11px;font-weight:700;letter-spacing:0.03em;text-align:center;flex:1;">CURRENT WEEK</span>
+                    <button class="btn-bw mono" id="nextWeekBtn" style="padding:4px 8px;font-size:10px;min-width:64px;visibility:hidden;" onclick="changeWeek(1)">NEXT →</button>
                 </div>
 
-                <!-- Sub-pane B: 02 TASKS -->
-                <div id="mob-view-tasks" class="hidden space-y-1">
-                    <div class="flex items-center justify-between py-1 hairline-b">
-                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted">
-                            CREATED VIA GEMINI & GOOGLE TASKS
-                        </span>
-                        <span id="mob-tasks-counter" class="font-mono text-[10px] font-bold uppercase"></span>
+                <div class="streak-carousel-viewport" id="streakCarousel"></div>
+
+                <div class="week-dots">
+                    <div id="weekDots" style="display:flex;align-items:center;gap:6px;flex:1;justify-content:center;"></div>
+                    <div style="display:flex;gap:4px;">
+                        <button class="btn-bw mono" id="aiStreakCoachBtn" style="padding:3px 6px;font-size:9px;" onclick="analyzeStreakWithGemini()" title="Analyze 5-Week Habit Velocity with Gemini LLM">✦ AI AUDIT</button>
+                        <button class="btn-bw mono" id="aiGroundedTipBtn" style="padding:3px 6px;font-size:9px;" onclick="fetchGroundedHabitProtocol()" title="Get Science-Backed Habit Optimization via Google Search Grounding">🌐 SCIENCE TIP</button>
+                        <button class="btn-bw mono" id="aiStreakTtsBtn" style="padding:3px 6px;font-size:9px;" onclick="speakStreakInsight()" title="Read Streak Audit Aloud via Gemini TTS">🔊</button>
                     </div>
-                    <div id="mob-tasks-list" class="divide-y divide-bw-hairline"></div>
                 </div>
 
-                <!-- Sub-pane C: 03 SCHEDULE -->
-                <div id="mob-view-schedule" class="hidden space-y-2.5 pt-1">
-                    <div class="flex items-center justify-between py-1 hairline-b">
-                        <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted">
-                            GOOGLE CALENDAR + NOTION CALENDAR
-                        </span>
-                        <span id="mob-now-clock" class="font-mono text-[10px] font-bold">12:20</span>
+                <div class="ai-insight-banner mono" id="aiStreakBanner">
+                    <div class="ai-insight-header">
+                        <span id="aiStreakTitle">✦ GEMINI VELOCITY DIAGNOSTIC</span>
+                        <button class="btn-bw mono" style="padding:1px 5px;font-size:9px;" onclick="document.getElementById('aiStreakBanner').classList.remove('active')">X</button>
                     </div>
-                    <div id="mob-schedule-list" class="space-y-2"></div>
-                </div>
-
-                <!-- Sub-pane D: 04 MATRIX -->
-                <div id="mob-view-matrix" class="hidden space-y-4 pt-1">
-                    <div class="p-3.5 border-stark bg-bw-bg space-y-3">
-                        <div class="flex items-center justify-between hairline-b pb-2">
-                            <span class="font-mono text-[11px] font-bold uppercase tracking-wider">7-DAY VELOCITY</span>
-                            <span id="mob-vel-avg" class="font-mono text-[10px] font-bold bg-bw-ink text-bw-bg px-1.5 py-0.5">82% AVG</span>
-                        </div>
-                        <div id="mob-velocity-bars" class="grid grid-cols-7 gap-2 items-end h-28 pt-3"></div>
-                    </div>
-
-                    <div class="p-3.5 border-stark bg-bw-bg space-y-2.5">
-                        <div class="flex items-center justify-between hairline-b pb-2">
-                            <span class="font-mono text-[11px] font-bold uppercase tracking-wider">HABIT STREAK MATRIX</span>
-                            <span class="font-mono text-[9px] text-bw-muted uppercase">M · T · W · T · F · S · S</span>
-                        </div>
-                        <div id="mob-matrix-rows" class="space-y-2"></div>
+                    <div id="aiStreakText" style="color:var(--ink);">Analyzing 35-day execution telemetry...</div>
+                    <div id="aiStreakSources" style="display:none;font-size:9px;color:var(--muted);flex-wrap:wrap;gap:6px;padding-top:2px;"></div>
+                    <div id="aiStreakActionRow" style="display:none;justify-content:space-between;align-items:center;padding-top:4px;border-top:1px dashed var(--hairline);">
+                        <span id="aiSuggestedTaskLabel" style="font-size:10px;color:var(--muted);"></span>
+                        <button class="btn-bw mono" style="padding:3px 7px;font-size:9px;" onclick="applyAiSuggestedAction()">+ INJECT PROTOCOL</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Mobile Fixed Thumb-Zone Bottom Bar -->
-            <nav class="border-stark-t bg-bw-bg grid grid-cols-4 shrink-0">
-                <button type="button" data-mob-tab="rituals" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-ink text-bw-bg border-r border-bw-hairline">
-                    01 RITUALS
-                </button>
-                <button type="button" data-mob-tab="tasks" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-bg text-bw-ink border-r border-bw-hairline">
-                    02 TASKS
-                </button>
-                <button type="button" data-mob-tab="schedule" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-bg text-bw-ink border-r border-bw-hairline">
-                    03 SCHEDULE
-                </button>
-                <button type="button" data-mob-tab="matrix" class="mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider bg-bw-bg text-bw-ink">
-                    04 MATRIX
-                </button>
-            </nav>
+            <!-- DAY STRIP + GEMINI DAY AUTO-PLANNER BAR -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <div class="day-strip" id="dayStrip"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;border:var(--border-subtle);padding:5px 8px;background:var(--surface);">
+                    <span class="mono" id="selectedDayAiLabel" style="font-size:10px;color:var(--muted);">SELECTED: TODAY</span>
+                    <button class="btn-bw mono" id="aiDayPlannerBtn" style="padding:3px 8px;font-size:9px;" onclick="generateDayPlanWithGemini()" title="Auto-Generate Tasks & Time-Blocks for Selected Day using Gemini LLM">✦ AI AUTO-PLAN DAY</button>
+                </div>
+            </div>
+
+            <div class="item-list" id="habitList"></div>
+        </section>
+
+        <!-- PANE 02: GOOGLE TASKS & REMINDERS -->
+        <section class="pane" id="pane-tasks">
+            <div class="pane-header">
+                <span class="pane-title">02 // Google Tasks & Reminders</span>
+                <span class="pane-meta mono" id="taskCountLabel">0 PENDING</span>
+            </div>
+
+            <div class="item-list" id="taskList"></div>
+        </section>
+
+        <!-- PANE 03: TIME-BLOCK LEDGER -->
+        <section class="pane" id="pane-calendar">
+            <div class="pane-header">
+                <span class="pane-title">03 // Time-Block Ledger</span>
+                <span class="pane-meta mono" id="calDateLabel">TODAY</span>
+            </div>
+
+            <div id="calendarList"></div>
+        </section>
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="mobile-tabs">
+        <div class="m-tab active mono" onclick="switchMobileSubTab('habits', this)">01 Rituals</div>
+        <div class="m-tab mono" onclick="switchMobileSubTab('tasks', this)">02 Tasks</div>
+        <div class="m-tab mono" onclick="switchMobileSubTab('calendar', this)">03 Schedule</div>
+        <div class="m-tab mono" onclick="openTerminal()">✦ Gemini</div>
+    </nav>
+
+    <!-- GEMINI AI COMMAND & MULTI-MODAL TERMINAL MODAL -->
+    <div class="modal-backdrop" id="terminalModal" onclick="handleBackdropClick(event, 'terminalModal')">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="pane-header">
+                <span class="pane-title mono">✦ GEMINI AI CO-PILOT TERMINAL</span>
+                <button class="btn-bw mono" onclick="closeTerminal()">X</button>
+            </div>
+            <p style="font-size:12px;color:var(--muted);line-height:1.4;">
+                Type a natural language instruction or upload an image/syllabus for Gemini AI to parse into tasks or schedule blocks:
+            </p>
+            <textarea id="terminalInput" class="terminal-textarea" placeholder="e.g. Add task 'Review Graph Theory at 18:00' or paste notes..."></textarea>
+            
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-bw mono" style="flex:1;padding:9px;" onclick="runGeminiCommand()">EXECUTE COMMAND</button>
+                <button class="btn-bw mono" style="padding:9px;" onclick="generateAiBriefing()">✦ BRIEFING</button>
+                <button class="btn-bw mono" style="padding:9px;" onclick="playAudioBriefing()">🔊 TTS VOICE</button>
+            </div>
+
+            <div style="border-top:1px dashed var(--hairline);padding-top:10px;display:flex;gap:8px;align-items:center;">
+                <input type="file" id="imageUpload" accept="image/*" style="font-size:11px;color:var(--ink);" onchange="handleImageUpload(event)">
+                <span style="font-size:10px;color:var(--muted);" id="imageStatus">Upload syllabus/notes for AI parsing</span>
+            </div>
+
+            <div class="terminal-output" id="terminalOutput">Terminal initialized with Gemini 3 Flash & TTS. Ready for input...</div>
         </div>
-
-        <!-- =======================================================================
-             INTERFACE 2: TABLET OS (ASYMMETRIC 2-COLUMN SWISS EDITORIAL FOLIO)
-             ======================================================================= -->
-        <div id="layout-tablet" class="hidden h-full bg-bw-bg flex-col preview-frame-tablet">
-            <!-- Tablet Folio Subheader with 7-Day Selector -->
-            <div class="px-6 py-3 border-stark-b flex items-center justify-between gap-4 bg-bw-bg shrink-0">
-                <div>
-                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-bw-muted block">
-                        TABLET FOLIO // SPLIT-SCREEN EXECUTION DECK
-                    </span>
-                    <div class="flex items-baseline gap-3 mt-0.5">
-                        <h2 id="tab-date-heading" class="text-lg font-extrabold tracking-tight">WEDNESDAY, 14 OCT</h2>
-                        <span id="tab-completion-pill" class="font-mono text-xs font-bold px-2 py-0.5 bg-bw-ink text-bw-bg">
-                            75% RITUALS
-                        </span>
-                    </div>
-                </div>
-                <div id="tab-day-strip" class="grid grid-cols-7 gap-1.5 w-72"></div>
-            </div>
-
-            <!-- Asymmetric 2-Column Split (Left 45%: Schedule + Matrix | Right 55%: Rituals + Tasks) -->
-            <div class="flex-1 grid grid-cols-12 overflow-hidden">
-                <!-- Left Column (5 of 12 cols ~ 42%) -->
-                <div class="col-span-5 border-stark-r overflow-y-auto no-scrollbar p-5 space-y-6 bg-bw-surface/50">
-                    <!-- Sticky Schedule Block -->
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between border-stark-b pb-2">
-                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
-                                01 // TODAY'S SCHEDULE
-                            </span>
-                            <span class="font-mono text-[10px] text-bw-muted uppercase">GCAL + NOTION</span>
-                        </div>
-                        <div id="tab-schedule-list" class="space-y-2"></div>
-                    </div>
-
-                    <!-- 7-Day Streak Matrix & Velocity -->
-                    <div class="p-4 border-stark bg-bw-bg space-y-4">
-                        <div class="flex items-center justify-between hairline-b pb-2">
-                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
-                                02 // 7D STREAK MATRIX
-                            </span>
-                            <span id="tab-vel-badge" class="font-mono text-[10px] font-bold bg-bw-ink text-bw-bg px-1.5 py-0.5">
-                                82% VELOCITY
-                            </span>
-                        </div>
-                        <div id="tab-velocity-bars" class="grid grid-cols-7 gap-2 items-end h-24 pt-2"></div>
-                        <div id="tab-matrix-rows" class="space-y-2 pt-2 hairline-t"></div>
-                    </div>
-                </div>
-
-                <!-- Right Column (7 of 12 cols ~ 58%): Interactive Execution Deck -->
-                <div class="col-span-7 overflow-y-auto no-scrollbar p-6 space-y-7 bg-bw-bg">
-                    <!-- Daily Rituals Execution -->
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between border-stark-b pb-2">
-                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
-                                03 // DAILY RITUALS (HABITS LIST)
-                            </span>
-                            <button type="button" onclick="markAllRitualsForSelectedDay()" class="font-mono text-[10px] font-bold uppercase underline underline-offset-4">
-                                TOGGLE ALL
-                            </button>
-                        </div>
-                        <div id="tab-rituals-list" class="divide-y divide-bw-hairline"></div>
-                    </div>
-
-                    <!-- Pending Google Tasks & Gemini Reminders -->
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between border-stark-b pb-2">
-                            <span class="font-mono text-xs font-bold uppercase tracking-wider">
-                                04 // GOOGLE TASKS & GEMINI REMINDERS
-                            </span>
-                            <span id="tab-tasks-summary" class="font-mono text-[10px] text-bw-muted uppercase"></span>
-                        </div>
-                        <div id="tab-tasks-list" class="divide-y divide-bw-hairline"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- =======================================================================
-             INTERFACE 3: DESKTOP / LAPTOP OS (WINDOWS 11 3-PANE COMMAND CENTER)
-             ======================================================================= -->
-        <div id="layout-desktop" class="hidden h-full bg-bw-bg flex-col w-full">
-            <!-- Top Telemetry Status Bar -->
-            <div class="px-6 py-2 border-stark-b bg-bw-surface flex items-center justify-between text-[11px] font-mono shrink-0">
-                <div class="flex items-center gap-6">
-                    <span><strong class="font-bold">TELEMETRY:</strong> ONLINE</span>
-                    <span><strong class="font-bold">FOCUS:</strong> AI/ML & CS CORE</span>
-                    <span id="desk-live-clock">WED 14 OCT // 12:20:00 IST</span>
-                </div>
-                <div class="flex items-center gap-4 text-bw-muted">
-                    <span>KEYS: <strong class="text-bw-ink">[1-5]</strong> TOGGLE RITUAL</span>
-                    <span><strong class="text-bw-ink">[R]</strong> SYNC GOOGLE</span>
-                    <span><strong class="text-bw-ink">[←/→]</strong> CHANGE DAY</span>
-                </div>
-            </div>
-
-            <!-- 3-Column Bento Command Center -->
-            <div class="flex-1 grid grid-cols-12 overflow-hidden">
-
-                <!-- COLUMN 1 (4 Cols): DAILY RITUALS + 7-DAY VELOCITY & MATRIX -->
-                <section class="col-span-4 border-stark-r flex flex-col overflow-y-auto no-scrollbar p-6 space-y-6 bg-bw-bg">
-                    <div class="flex items-baseline justify-between border-stark-b pb-2.5">
-                        <div>
-                            <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">PANE 01 // HABIT ENGINE</span>
-                            <h2 class="text-lg font-extrabold tracking-tight mt-0.5">DAILY RITUALS</h2>
-                        </div>
-                        <span id="desk-ritual-score" class="font-mono text-sm font-bold px-2 py-0.5 bg-bw-ink text-bw-bg">
-                            3/4 DONE
-                        </span>
-                    </div>
-
-                    <!-- 7-Day Selector Strip -->
-                    <div id="desk-day-strip" class="grid grid-cols-7 gap-1.5"></div>
-
-                    <!-- Rituals Check-off List -->
-                    <div id="desk-rituals-list" class="divide-y divide-bw-hairline border-t border-b border-bw-hairline"></div>
-
-                    <!-- Weekly Velocity Column Chart + Matrix -->
-                    <div class="p-4 border-stark bg-bw-surface space-y-4 mt-auto">
-                        <div class="flex items-center justify-between hairline-b pb-2">
-                            <span class="font-mono text-[11px] font-bold uppercase tracking-wider">7-DAY STREAK VELOCITY</span>
-                            <span id="desk-vel-pct" class="font-mono text-[10px] font-bold px-1.5 py-0.5 bg-bw-ink text-bw-bg">82% AVG</span>
-                        </div>
-                        <div id="desk-velocity-bars" class="grid grid-cols-7 gap-2 items-end h-24 pt-2"></div>
-                        <div class="pt-2 hairline-t space-y-1.5" id="desk-matrix-rows"></div>
-                    </div>
-                </section>
-
-                <!-- COLUMN 2 (4 Cols): GOOGLE TASKS & GEMINI REMINDERS EXECUTION QUEUE -->
-                <section class="col-span-4 border-stark-r flex flex-col overflow-y-auto no-scrollbar p-6 space-y-5 bg-bw-bg">
-                    <div class="flex items-baseline justify-between border-stark-b pb-2.5">
-                        <div>
-                            <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">PANE 02 // TWO-WAY PATCH SYNC</span>
-                            <h2 class="text-lg font-extrabold tracking-tight mt-0.5">GOOGLE TASKS & REMINDERS</h2>
-                        </div>
-                        <span id="desk-tasks-count" class="font-mono text-xs font-bold border border-bw-ink px-2 py-0.5">
-                            4 PENDING
-                        </span>
-                    </div>
-
-                    <div class="p-3 border border-bw-hairline bg-bw-surface font-mono text-[11px] text-bw-muted leading-relaxed">
-                        STRICT EXECUTION MODE: Create tasks by asking <strong class="text-bw-ink">Gemini</strong> or in <strong class="text-bw-ink">Google Tasks</strong>. Check off below to sync completion across all devices.
-                    </div>
-
-                    <div id="desk-tasks-list" class="divide-y divide-bw-hairline"></div>
-                </section>
-
-                <!-- COLUMN 3 (4 Cols): FULL-DAY CHRONOLOGICAL SCHEDULE (GCAL + NOTION) -->
-                <section class="col-span-4 flex flex-col overflow-y-auto no-scrollbar p-6 space-y-5 bg-bw-surface/40">
-                    <div class="flex items-baseline justify-between border-stark-b pb-2.5">
-                        <div>
-                            <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">PANE 03 // TIME-BLOCK LEDGER</span>
-                            <h2 class="text-lg font-extrabold tracking-tight mt-0.5">GCAL + NOTION SCHEDULE</h2>
-                        </div>
-                        <span id="desk-cal-badge" class="font-mono text-[10px] font-bold uppercase px-2 py-0.5 bg-bw-ink text-bw-bg">
-                            LIVE AGENDA
-                        </span>
-                    </div>
-
-                    <div id="desk-schedule-list" class="space-y-3"></div>
-                </section>
-
-            </div>
-        </div>
-
     </div>
 
-    <div id="oauth-modal" class="fixed inset-0 bg-white/90 z-50 hidden items-center justify-center p-4">
-        <div class="w-full max-w-md bg-bw-bg border-2 border-bw-ink p-6 space-y-5">
-            <div class="flex items-center justify-between border-stark-b pb-3">
-                <div>
-                    <span class="font-mono text-[10px] uppercase tracking-widest text-bw-muted block">TWO-WAY CLOUD ENGINE</span>
-                    <h3 class="font-mono text-sm font-bold uppercase">GOOGLE TASKS & CALENDAR SYNC</h3>
-                </div>
-                <button id="btn-close-oauth" type="button" class="font-mono text-xs px-2.5 py-1 border-stark hover:bg-bw-ink hover:text-bw-bg">
-                    ESC
-                </button>
+    <!-- PRIORITY BRIEF FOCUS OVERLAY DRAWER (OPENED ON RIGHT SWIPE ON CURRENT WEEK) -->
+    <div class="modal-backdrop" id="streakAnalyticsModal" onclick="closeStreakAnalyticsModal()">
+        <div class="modal-card" onclick="event.stopPropagation()" style="max-height:86dvh;overflow-y:auto;">
+            <div class="pane-header">
+                <span class="pane-title mono">✦ PRIORITY BRIEF // REMINDERS, TASKS & APPOINTMENTS</span>
+                <button class="btn-bw mono" onclick="closeStreakAnalyticsModal()">X</button>
+            </div>
+            
+            <div id="analyticsModalContent" style="display:flex;flex-direction:column;gap:14px;">
+                <!-- Populated dynamically with Section A (Tasks), Section B (Appointments), Section C (Rituals) -->
             </div>
 
-            <div class="space-y-3 text-xs leading-relaxed">
-                <p class="text-bw-muted">
-                    Connect your Google account so tasks/reminders created via <strong class="text-bw-ink">Gemini</strong>, <strong class="text-bw-ink">Google Tasks</strong>, <strong class="text-bw-ink">Google Calendar</strong>, and <strong class="text-bw-ink">Notion Calendar</strong> appear here automatically—and checking an item sends a live <code class="font-mono bg-bw-surface px-1">PATCH</code> request back to Google.
-                </p>
+            <div id="priorityTriageOutput" class="terminal-output" style="display:none;"></div>
 
-                <div>
-                    <label for="oauth-client-id" class="block font-mono text-[10px] font-bold uppercase tracking-wider mb-1.5">
-                        GOOGLE OAUTH 2.0 CLIENT ID
-                    </label>
-                    <input
-                        id="oauth-client-id"
-                        type="text"
-                        placeholder="123456789-xxx.apps.googleusercontent.com"
-                        class="w-full px-3 py-2.5 border-stark font-mono text-xs bg-bw-bg text-bw-ink focus:outline-none"
-                    />
-                </div>
-
-                <div class="p-3 border border-bw-hairline bg-bw-surface space-y-1 font-mono text-[10px] text-bw-muted">
-                    <div class="text-bw-ink font-bold">SCOPES USED FOR TWO-WAY SYNC:</div>
-                    <div>• https://www.googleapis.com/auth/tasks (Read & Mark Done)</div>
-                    <div>• https://www.googleapis.com/auth/calendar.readonly (GCal + Notion)</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2.5 pt-1">
-                <button id="btn-reset-demo" type="button" class="py-2.5 border border-bw-hairline font-mono text-[11px] font-bold uppercase hover:border-bw-ink">
-                    RESET DEMO DATA
-                </button>
-                <button id="btn-authorize-google" type="button" class="py-2.5 bg-bw-ink text-bw-bg font-mono text-[11px] font-bold uppercase tracking-wider active:opacity-80">
-                    AUTHORIZE & SYNC
-                </button>
+            <div style="display:flex;gap:8px;">
+                <button class="btn-bw mono" id="priorityTriageBtn" style="flex:1;padding:10px;" onclick="generateDrawerAiPrescription()">✦ GEMINI PRIORITY TRIAGE</button>
+                <button class="btn-bw mono" style="padding:10px;" onclick="closeStreakAnalyticsModal()">CLOSE OVERLAY</button>
             </div>
         </div>
     </div>
 
-    <!-- MONOCHROME TOAST BANNER -->
-    <div id="bw-toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-150">
-        <div class="px-4 py-1.5 bg-bw-ink text-bw-bg font-mono text-[10px] font-bold uppercase tracking-[0.18em] border border-bw-bg">
-            <span id="bw-toast-msg">SYNCED</span>
+    <!-- GOOGLE SYNC MODAL -->
+    <div class="modal-backdrop" id="syncModal" onclick="handleBackdropClick(event, 'syncModal')">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="pane-header">
+                <span class="pane-title mono">GOOGLE CLOUD OAUTH SYNC</span>
+                <button class="btn-bw mono" onclick="closeSyncModal()">X</button>
+            </div>
+            <p style="font-size:12px;line-height:1.5;color:var(--muted);">
+                Enter your Google OAuth 2.0 Client ID to enable two-way sync with <strong>Google Tasks</strong> and <strong>Google Calendar</strong>.
+            </p>
+            <input type="text" id="clientIdInput" class="btn-bw mono" style="width:100%;padding:10px;text-align:left;" placeholder="xxxx.apps.googleusercontent.com">
+            <button class="btn-bw mono" style="width:100%;padding:10px;" onclick="connectGoogleAccount()">AUTHORIZE & SYNC LIVE</button>
+        </div>
+    </div>
+
+    <!-- KEYBOARD SHORTCUTS MODAL -->
+    <div class="modal-backdrop" id="shortcutsModal" onclick="handleBackdropClick(event, 'shortcutsModal')">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="pane-header">
+                <span class="pane-title mono">DESKTOP KEYBOARD CONTROLS</span>
+                <button class="btn-bw mono" onclick="closeShortcutsModal()">X</button>
+            </div>
+            <div style="font-size:12px;display:flex;flex-direction:column;gap:8px;font-family:'JetBrains Mono',monospace;">
+                <div><b>[1] - [5]</b> : Toggle Daily Rituals 1 to 5</div>
+                <div><b>[Q] [W] [E] [A] [S]</b> : Toggle Google Tasks</div>
+                <div><b>[←] / [→]</b> : Switch Selected Day</div>
+                <div><b>[T]</b> : Jump to Today</div>
+                <div><b>[D]</b> : Cycle Theme (Auto / Light / Dark)</div>
+                <div><b>[G]</b> : Open Gemini AI Terminal</div>
+                <div><b>[R]</b> : Trigger Live API Sync</div>
+            </div>
         </div>
     </div>
 
     <script>
-        /* ============================================================================
-           1. WEEK CALENDAR CONTEXT & DEFAULT DATA
-           ============================================================================ */
-        const STORAGE_KEY = 'protocol_03_multidevice_state_v1';
-        const SHORT_DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-        const MED_DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-        const FULL_DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+        const todayIso = new Date().toISOString().slice(0, 10);
+        let selectedDate = todayIso;
+        let currentWeekOffset = 0; // 0 = Current Week, -1 = 1 Wk Ago, -2 = 2 Wks Ago, -3 = 3 Wks Ago, -4 = 4 Wks Ago
+        let tokenClient = null;
+        let accessToken = null;
+        let uploadedImageBase64 = null;
+        let isProgrammaticScroll = false;
+        let carouselInitialized = false;
+        let lastAiStreakSummary = "Execute an AI Audit first to hear your personalized habit velocity briefing.";
+        let pendingAiSuggestion = null;
 
-        function buildWeekDays() {
+        // SYSTEM THEME DETECTION & AUTOMATIC DARK/LIGHT INVERSION
+        const systemDarkMatcher = window.matchMedia('(prefers-color-scheme: dark)');
+        let themeMode = localStorage.getItem('protocol03_theme_mode') || 'auto'; // 'auto' | 'light' | 'dark'
+
+        function applyEffectiveTheme() {
+            const isSystemDark = systemDarkMatcher.matches;
+            const effectiveTheme = themeMode === 'auto' ? (isSystemDark ? 'dark' : 'light') : themeMode;
+            document.documentElement.setAttribute('data-theme', effectiveTheme);
+
+            const metaTheme = document.getElementById('metaThemeColor');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', effectiveTheme === 'dark' ? '#000000' : '#FFFFFF');
+            }
+
+            const btn = document.getElementById('themeToggleBtn');
+            if (btn) {
+                const labelMap = {
+                    auto: `◐ AUTO (${effectiveTheme.toUpperCase()})`,
+                    light: '☀ LIGHT',
+                    dark: '● DARK'
+                };
+                btn.textContent = labelMap[themeMode] || '◐ AUTO';
+            }
+        }
+
+        function cycleThemePreference() {
+            const order = ['auto', 'dark', 'light'];
+            themeMode = order[(order.indexOf(themeMode) + 1) % order.length];
+            localStorage.setItem('protocol03_theme_mode', themeMode);
+            applyEffectiveTheme();
+        }
+
+        // Listen for OS/System theme changes in real time
+        if (systemDarkMatcher.addEventListener) {
+            systemDarkMatcher.addEventListener('change', applyEffectiveTheme);
+        } else if (systemDarkMatcher.addListener) {
+            systemDarkMatcher.addListener(applyEffectiveTheme);
+        }
+
+        // Live Header Clock
+        function updateLiveClock() {
             const now = new Date();
-            const raw = now.getDay();
-            const todayIdx = raw === 0 ? 6 : raw - 1; // 0=Mon .. 6=Sun
+            const dayStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
+            const timeStr = now.toTimeString().slice(0, 5);
+            const clockEl = document.getElementById('liveHeaderClock');
+            if (clockEl) clockEl.textContent = `${dayStr} · ${timeStr}`;
+        }
+        setInterval(updateLiveClock, 15000);
 
-            const monday = new Date(now);
-            monday.setDate(now.getDate() - todayIdx);
-            monday.setHours(0, 0, 0, 0);
+        async function fetchGeminiWithBackoff(url, payload, retries = 4) {
+            let delay = 1000;
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) return await response.json();
+                    if (attempt === retries) throw new Error(`HTTP ${response.status}`);
+                } catch (err) {
+                    if (attempt === retries) throw err;
+                }
+                await new Promise(r => setTimeout(r, delay));
+                delay *= 2;
+            }
+        }
 
-            const days = [];
-            for (let i = 0; i < 7; i++) {
-                const d = new Date(monday);
-                d.setDate(monday.getDate() + i);
-                days.push({
-                    idx: i,
-                    short: SHORT_DAYS[i],
-                    med: MED_DAYS[i],
-                    full: FULL_DAYS[i],
-                    dateNum: String(d.getDate()).padStart(2, '0'),
-                    monthShort: d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
-                    iso: d.toISOString().slice(0, 10),
-                    isToday: i === todayIdx
+        function pcmToWavBlob(pcm16Array, sampleRate) {
+            const buffer = new ArrayBuffer(44 + pcm16Array.length * 2);
+            const view = new DataView(buffer);
+            const writeString = (offset, str) => {
+                for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+            };
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + pcm16Array.length * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, pcm16Array.length * 2, true);
+            for (let i = 0; i < pcm16Array.length; i++) {
+                view.setInt16(44 + i * 2, pcm16Array[i], true);
+            }
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function createSeededHabits() {
+            const defaults = [
+                { id: 'h1', name: 'Calisthenics & Pull-ups', history: {} },
+                { id: 'h2', name: '2kg Dumbbell Shoulders', history: {} },
+                { id: 'h3', name: 'DSA & Algorithm Practice', history: {} },
+                { id: 'h4', name: 'Deep Study Session (NotebookLM)', history: {} },
+                { id: 'h5', name: 'Daily Hydration & Mobility', history: {} }
+            ];
+            const now = new Date();
+            for (let i = 34; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(now.getDate() - i);
+                const iso = d.toISOString().slice(0, 10);
+                defaults.forEach((h, idx) => {
+                    if ((i + idx) % 2 === 0 || (i * idx) % 3 === 0) {
+                        h.history[iso] = true;
+                    }
                 });
             }
-            return { todayIdx, days };
+            return defaults;
         }
 
-        const weekCtx = buildWeekDays();
-        let selectedDayIdx = weekCtx.todayIdx;
-        let viewportMode = 'auto'; // 'auto' | 'mobile' | 'tablet' | 'desktop'
-        let activeMobileTab = 'rituals'; // 'rituals' | 'tasks' | 'schedule' | 'matrix'
-        let googleAccessToken = null;
-        let tokenClient = null;
+        let state = JSON.parse(localStorage.getItem('protocol03_state')) || {
+            clientId: '',
+            habits: createSeededHabits(),
+            events: [
+                { time: '07:30', title: 'Morning Calisthenics & 2kg Shoulder Protocol', source: 'GCAL' },
+                { time: '10:00', title: 'AI/ML Core Lecture & Mid-Term Exam Revision', source: 'NOTION CAL' },
+                { time: '14:00', title: 'Java Programming & Discrete Structures', source: 'NOTION CAL' },
+                { time: '17:30', title: 'DSA & LeetCode Problem Solving Sprint', source: 'GCAL' },
+                { time: '21:00', title: 'Evening Protocol Review & Next-Day Planning', source: 'GCAL' }
+            ],
+            tasks: [
+                { id: 't1', title: 'Revise Discrete Mathematics — Graph Theory & Trees', done: true, key: 'q' },
+                { id: 't2', title: 'Complete Java Object-Oriented Quiz Prep & Lab', done: true, key: 'w' },
+                { id: 't3', title: 'Organize AI/ML Mid-Term Exam Summary in NotebookLM', done: true, key: 'e' },
+                { id: 't4', title: 'Push Updated Portfolio & Habit OS Repo to GitHub Pages', done: false, key: 'a' },
+                { id: 't5', title: 'Solve 2 Medium LeetCode Array / DP Problems', done: false, key: 's' }
+            ]
+        };
 
-        function getDefaultState() {
-            const t = weekCtx.todayIdx;
-            const fillPattern = (fn) => [0, 1, 2, 3, 4, 5, 6].map(d => (d <= t ? Boolean(fn(d)) : false));
-
-            return {
-                clientId: '',
-                habitsListId: '@default',
-                tasksListId: '@default',
-                rituals: [
-                    {
-                        id: 'rit-1',
-                        googleTaskId: null,
-                        name: 'Calisthenics & Pull-ups',
-                        category: 'PHYSICAL',
-                        days: fillPattern(d => d !== 1)
-                    },
-                    {
-                        id: 'rit-2',
-                        googleTaskId: null,
-                        name: '2kg Dumbbell Shoulders',
-                        category: 'STRENGTH',
-                        days: fillPattern(d => d % 2 === 0 || d === t)
-                    },
-                    {
-                        id: 'rit-3',
-                        googleTaskId: null,
-                        name: 'DSA & Algorithm Practice',
-                        category: 'CODE',
-                        days: fillPattern(() => true)
-                    },
-                    {
-                        id: 'rit-4',
-                        googleTaskId: null,
-                        name: 'Deep Study Session (NotebookLM)',
-                        category: 'ACADEMIC',
-                        days: fillPattern(d => d !== 0)
-                    },
-                    {
-                        id: 'rit-5',
-                        googleTaskId: null,
-                        name: 'Daily Hydration & Mobility',
-                        category: 'RECOVERY',
-                        days: fillPattern(d => d < t)
-                    }
-                ],
-                tasks: [
-                    {
-                        id: 'gt-1',
-                        googleTaskId: null,
-                        title: 'Revise Discrete Mathematics — Graph Theory & Trees',
-                        dueLabel: 'TODAY // GEMINI REMINDER',
-                        source: 'GEMINI -> GTASKS',
-                        done: false
-                    },
-                    {
-                        id: 'gt-2',
-                        googleTaskId: null,
-                        title: 'Complete Java Object-Oriented Quiz Prep & Lab Review',
-                        dueLabel: 'TODAY // 17:00',
-                        source: 'GOOGLE TASKS',
-                        done: false
-                    },
-                    {
-                        id: 'gt-3',
-                        googleTaskId: null,
-                        title: 'Organize AI/ML Mid-Term Exam Summary in NotebookLM',
-                        dueLabel: 'TODAY // HIGH PRIORITY',
-                        source: 'GEMINI -> GTASKS',
-                        done: true
-                    },
-                    {
-                        id: 'gt-4',
-                        googleTaskId: null,
-                        title: 'Push Updated Portfolio & Habit OS Repo to GitHub Pages',
-                        dueLabel: 'UPCOMING // TOMORROW',
-                        source: 'GOOGLE TASKS',
-                        done: false
-                    },
-                    {
-                        id: 'gt-5',
-                        googleTaskId: null,
-                        title: 'Solve 2 Medium LeetCode Array / DP Problems',
-                        dueLabel: 'TODAY // 21:30',
-                        source: 'GEMINI -> GTASKS',
-                        done: false
-                    }
-                ],
-                schedule: [
-                    {
-                        id: 'ev-1',
-                        time: '07:30',
-                        endTime: '08:15',
-                        title: 'Morning Calisthenics & 2kg Shoulder Protocol',
-                        source: 'GCAL',
-                        location: 'HOME GYM'
-                    },
-                    {
-                        id: 'ev-2',
-                        time: '10:00',
-                        endTime: '12:00',
-                        title: 'AI/ML Core Lecture & Mid-Term Exam Revision Block',
-                        source: 'NOTION CAL',
-                        location: 'ACADEMIC BLOCK'
-                    },
-                    {
-                        id: 'ev-3',
-                        time: '14:00',
-                        endTime: '15:30',
-                        title: 'Java Programming & Discrete Structures Deep Work',
-                        source: 'NOTION CAL',
-                        location: 'STUDY DESK'
-                    },
-                    {
-                        id: 'ev-4',
-                        time: '17:30',
-                        endTime: '18:30',
-                        title: 'DSA & LeetCode Problem Solving Sprint',
-                        source: 'GCAL',
-                        location: 'LAPTOP'
-                    },
-                    {
-                        id: 'ev-5',
-                        time: '21:00',
-                        endTime: '22:00',
-                        title: 'Evening Protocol Review & Next-Day Planning',
-                        source: 'GCAL',
-                        location: 'ALL DEVICES'
-                    }
-                ]
-            };
-        }
-
-        function loadState() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return getDefaultState();
-                const parsed = JSON.parse(raw);
-                if (!parsed || !Array.isArray(parsed.rituals)) return getDefaultState();
-                return parsed;
-            } catch (e) {
-                return getDefaultState();
-            }
+        const totalHistoryEntries = state.habits.reduce((acc, h) => acc + Object.keys(h.history || {}).length, 0);
+        if (totalHistoryEntries === 0) {
+            state.habits = createSeededHabits();
         }
 
         function saveState() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            } catch (e) {}
+            localStorage.setItem('protocol03_state', JSON.stringify(state));
+            renderAll();
         }
 
-        let state = loadState();
-
-        /* ============================================================================
-           2. TACTILE AUDIO & HAPTIC FEEDBACK
-           ============================================================================ */
-        function playTactileClick(isDone) {
-            if (navigator.vibrate) {
-                try { navigator.vibrate(isDone ? 12 : 6); } catch (e) {}
-            }
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                const now = ctx.currentTime;
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(isDone ? 540 : 250, now);
-                osc.frequency.exponentialRampToValueAtTime(isDone ? 920 : 150, now + 0.045);
-
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-
-                osc.start(now);
-                osc.stop(now + 0.055);
-            } catch (e) {}
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('bw-toast');
-            const label = document.getElementById('bw-toast-msg');
-            label.textContent = msg;
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
-            clearTimeout(window.__bwToastTimer);
-            window.__bwToastTimer = setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0');
-            }, 1500);
-        }
-
-        /* ============================================================================
-           3. ADAPTIVE VIEWPORT DETECTION & SWITCHER ENGINE
-           ============================================================================ */
-        function resolveEffectiveLayout() {
-            if (viewportMode !== 'auto') return viewportMode;
-            const w = window.innerWidth;
-            if (w < 768) return 'mobile';
-            if (w < 1180) return 'tablet';
-            return 'desktop';
-        }
-
-        function applyViewportMode() {
-            const effective = resolveEffectiveLayout();
-            const mobEl = document.getElementById('layout-mobile');
-            const tabEl = document.getElementById('layout-tablet');
-            const deskEl = document.getElementById('layout-desktop');
-
-            mobEl.classList.add('hidden');
-            mobEl.classList.remove('flex');
-            tabEl.classList.add('hidden');
-            tabEl.classList.remove('flex');
-            deskEl.classList.add('hidden');
-            deskEl.classList.remove('flex');
-
-            if (effective === 'mobile') {
-                mobEl.classList.remove('hidden');
-                mobEl.classList.add('flex');
-            } else if (effective === 'tablet') {
-                tabEl.classList.remove('hidden');
-                tabEl.classList.add('flex');
-            } else {
-                deskEl.classList.remove('hidden');
-                deskEl.classList.add('flex');
-            }
-
-            // Update Top Badge & Switcher Buttons
-            const badge = document.getElementById('active-layout-badge');
-            badge.textContent = viewportMode === 'auto'
-                ? `AUTO // ${effective.toUpperCase()}`
-                : effective.toUpperCase();
-
-            document.querySelectorAll('.vp-btn').forEach(btn => {
-                const isSelected = btn.getAttribute('data-vp') === viewportMode;
-                btn.className = `vp-btn font-mono text-[10px] font-bold uppercase px-2 py-1 transition-colors ${
-                    isSelected ? 'bg-bw-ink text-bw-bg' : 'text-bw-ink hover:bg-bw-surface'
-                }`;
-            });
-        }
-
-        /* ============================================================================
-           4. METRICS & STREAK VELOCITY ENGINE
-           ============================================================================ */
-        function computeStats() {
-            const totalRituals = state.rituals.length;
-            const countsPerDay = [0, 1, 2, 3, 4, 5, 6].map(dIdx =>
-                state.rituals.filter(r => r.days[dIdx]).length
-            );
-            const pctPerDay = countsPerDay.map(c =>
-                totalRituals === 0 ? 0 : Math.round((c / totalRituals) * 100)
-            );
-
-            let activeStreak = 0;
-            for (let d = weekCtx.todayIdx; d >= 0; d--) {
-                if (countsPerDay[d] > 0) activeStreak++;
-                else break;
-            }
-
-            const elapsed = Math.max(weekCtx.todayIdx + 1, 1);
-            const totalChecks = countsPerDay.reduce((a, b) => a + b, 0);
-            const weeklyVelocityPct = totalRituals === 0
-                ? 0
-                : Math.min(100, Math.round((totalChecks / (totalRituals * elapsed)) * 100));
-
-            const pendingTasksCount = state.tasks.filter(t => !t.done).length;
-
-            return {
-                totalRituals,
-                countsPerDay,
-                pctPerDay,
-                activeStreak,
-                weeklyVelocityPct,
-                pendingTasksCount
-            };
-        }
-
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
-        }
-
-        /* ============================================================================
-           5. SHARED COMPONENT BUILDERS (RENDERING ALL 3 DEVICE LAYOUTS IN LOCKSTEP)
-           ============================================================================ */
-        function buildDayStripHtml(stats) {
-            return weekCtx.days.map((d, idx) => {
-                const isSel = idx === selectedDayIdx;
-                const pct = stats.pctPerDay[idx];
-                const dot = isSel
-                    ? 'bg-bw-bg'
-                    : pct === 100
-                        ? 'bg-bw-ink'
-                        : pct > 0
-                            ? 'bg-bw-muted'
-                            : 'bg-transparent';
-
-                return `
-                    <button type="button" onclick="selectDay(${idx})" class="py-1.5 px-1 border transition-colors flex flex-col items-center justify-center ${
-                        isSel
-                            ? 'bg-bw-ink text-bw-bg border-bw-ink'
-                            : 'bg-bw-bg text-bw-ink border-bw-hairline hover:border-bw-ink'
-                    }">
-                        <span class="font-mono text-[9px] tracking-widest ${isSel ? 'text-bw-inactive' : 'text-bw-muted'}">${d.short}</span>
-                        <span class="font-mono text-xs font-bold mt-0.5">${d.dateNum}</span>
-                        <span class="w-1 h-1 rounded-full mt-1 ${dot}"></span>
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function buildRitualsListHtml(touchLarge = false) {
-            return state.rituals.map((r, i) => {
-                const isDone = Boolean(r.days[selectedDayIdx]);
-                const streakCount = r.days.filter(Boolean).length;
-                const padClass = touchLarge ? 'py-4' : 'py-3';
-
-                return `
-                    <div onclick="toggleRitual('${r.id}')" class="${padClass} flex items-center justify-between gap-3 cursor-pointer group">
-                        <div class="flex items-center gap-3.5 min-w-0 flex-1">
-                            <button type="button" aria-label="Toggle ${escapeHtml(r.name)}" class="w-5 h-5 shrink-0 border-stark flex items-center justify-center font-mono text-xs font-bold transition-transform ${
-                                isDone ? 'bg-bw-ink text-bw-bg animate-popCheck' : 'bg-bw-bg text-transparent'
-                            }">
-                                ✓
-                            </button>
-                            <div class="min-w-0 flex-1">
-                                <span class="text-sm font-semibold block truncate ${
-                                    isDone ? 'line-through text-bw-muted' : 'text-bw-ink'
-                                }">${escapeHtml(r.name)}</span>
-                                <span class="font-mono text-[9px] uppercase tracking-widest text-bw-muted">
-                                    [${i + 1}] ${escapeHtml(r.category || 'RITUAL')}
-                                </span>
-                            </div>
-                        </div>
-                        <span class="font-mono text-xs font-bold px-1.5 py-0.5 border ${
-                            isDone ? 'border-bw-ink bg-bw-ink text-bw-bg' : 'border-bw-hairline text-bw-muted'
-                        }">
-                            ${streakCount}/7D
-                        </span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function buildTasksListHtml(touchLarge = false) {
-            return state.tasks.map(t => {
-                const padClass = touchLarge ? 'py-4' : 'py-3';
-                return `
-                    <div onclick="toggleGoogleTask('${t.id}')" class="${padClass} flex items-start justify-between gap-3 cursor-pointer group">
-                        <div class="flex items-start gap-3.5 min-w-0 flex-1">
-                            <button type="button" class="mt-0.5 w-5 h-5 shrink-0 border-stark flex items-center justify-center font-mono text-xs font-bold ${
-                                t.done ? 'bg-bw-ink text-bw-bg animate-popCheck' : 'bg-bw-bg text-transparent'
-                            }">
-                                ✓
-                            </button>
-                            <div class="min-w-0 flex-1">
-                                <p class="text-sm font-medium leading-snug ${
-                                    t.done ? 'line-through text-bw-muted' : 'text-bw-ink'
-                                }">${escapeHtml(t.title)}</p>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-bw-surface border border-bw-hairline text-bw-muted">
-                                        ${escapeHtml(t.source)}
-                                    </span>
-                                    <span class="font-mono text-[10px] text-bw-muted">
-                                        ${escapeHtml(t.dueLabel)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="font-mono text-[9px] uppercase tracking-widest px-1.5 py-0.5 border ${
-                            t.done ? 'border-bw-hairline text-bw-muted' : 'border-bw-ink text-bw-ink font-bold'
-                        }">
-                            ${t.done ? 'DONE' : 'EXEC'}
-                        </span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function buildScheduleHtml() {
+        function getSunSatWeekDays(offsetWeeks) {
             const now = new Date();
-            const currentHm = now.toTimeString().slice(0, 5);
+            const dayOfWeek = now.getDay();
+            const sun = new Date(now);
+            sun.setDate(now.getDate() - dayOfWeek + (offsetWeeks * 7));
+            sun.setHours(0,0,0,0);
 
-            return state.schedule.map(ev => {
-                const isCurrent = currentHm >= ev.time && currentHm <= (ev.endTime || '23:59');
-                return `
-                    <div class="p-3 border-stark bg-bw-bg border-l-4 border-l-bw-ink flex items-center justify-between gap-3">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2">
-                                <span class="font-mono text-xs font-bold text-bw-ink">
-                                    ${escapeHtml(ev.time)} — ${escapeHtml(ev.endTime || '')}
-                                </span>
-                                ${isCurrent ? '<span class="font-mono text-[9px] font-bold px-1.5 py-0.5 bg-bw-ink text-bw-bg">NOW</span>' : ''}
-                            </div>
-                            <p class="text-xs font-semibold text-bw-ink mt-1 truncate">
-                                ${escapeHtml(ev.title)}
-                            </p>
-                            <span class="font-mono text-[9px] uppercase tracking-wider text-bw-muted block mt-0.5">
-                                ${escapeHtml(ev.location || 'SCHEDULED')}
-                            </span>
-                        </div>
-                        <span class="font-mono text-[9px] font-bold uppercase px-2 py-1 border border-bw-ink shrink-0">
-                            ${escapeHtml(ev.source)}
-                        </span>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function buildVelocityBarsHtml(stats) {
-            return weekCtx.days.map((d, idx) => {
-                const pct = stats.pctPerDay[idx];
-                const cnt = stats.countsPerDay[idx];
-                const isSel = idx === selectedDayIdx;
-                const barH = pct === 0 ? 6 : pct;
-
-                return `
-                    <button type="button" onclick="selectDay(${idx})" class="flex flex-col items-center justify-end h-full w-full focus:outline-none">
-                        <span class="font-mono text-[9px] mb-1 ${isSel ? 'font-bold text-bw-ink' : 'text-bw-muted'}">
-                            ${cnt}/${stats.totalRituals}
-                        </span>
-                        <div class="w-full h-16 bg-bw-bg border ${isSel ? 'border-bw-ink' : 'border-bw-hairline'} p-[2px] flex items-end">
-                            <div class="w-full transition-all duration-300 ${pct > 0 ? 'bg-bw-ink' : 'bg-bw-inactive'}" style="height:${barH}%;"></div>
-                        </div>
-                        <span class="font-mono text-[9px] mt-1 ${isSel ? 'font-bold underline underline-offset-2' : 'text-bw-muted'}">
-                            ${d.short}
-                        </span>
-                    </button>
-                `;
-            }).join('');
-        }
-
-        function buildMatrixRowsHtml() {
-            return state.rituals.map(r => {
-                const squares = r.days.map((done, dIdx) => {
-                    const isSel = dIdx === selectedDayIdx;
-                    return `
-                        <button
-                            type="button"
-                            onclick="toggleRitualOnDay('${r.id}', ${dIdx})"
-                            title="${escapeHtml(r.name)} (${MED_DAYS[dIdx]})"
-                            class="w-3.5 h-3.5 border transition-transform active:scale-90 ${
-                                done
-                                    ? 'bg-bw-ink border-bw-ink'
-                                    : 'bg-bw-bg border-bw-inactive hover:border-bw-ink'
-                            } ${isSel ? 'ring-1 ring-bw-ink ring-offset-1' : ''}"
-                        ></button>
-                    `;
-                }).join('');
-
-                return `
-                    <div class="grid grid-cols-12 items-center gap-1 py-0.5">
-                        <span class="col-span-5 text-[11px] font-medium truncate pr-2">${escapeHtml(r.name)}</span>
-                        <div class="col-span-7 grid grid-cols-7 justify-items-center">${squares}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        /* ============================================================================
-           6. MASTER RENDER FUNCTION (SYNCS MOBILE, TABLET & DESKTOP SIMULTANEOUSLY)
-           ============================================================================ */
-        function renderAll() {
-            applyViewportMode();
-            const stats = computeStats();
-            const dayMeta = weekCtx.days[selectedDayIdx];
-            const doneToday = stats.countsPerDay[selectedDayIdx];
-            const pctToday = stats.pctPerDay[selectedDayIdx];
-
-            const stripHtml = buildDayStripHtml(stats);
-            const velBarsHtml = buildVelocityBarsHtml(stats);
-            const matrixHtml = buildMatrixRowsHtml();
-            const scheduleHtml = buildScheduleHtml();
-
-            // --- 1. MOBILE RENDER ---
-            document.getElementById('mob-date-label').textContent =
-                `${dayMeta.med} · ${dayMeta.dateNum} ${dayMeta.monthShort}${dayMeta.isToday ? ' · TODAY' : ''}`;
-            document.getElementById('mob-ratio-badge').textContent =
-                `${pctToday}% // ${doneToday} OF ${stats.totalRituals}`;
-            document.getElementById('mob-streak-sub').textContent =
-                `ACTIVE STREAK: ${stats.activeStreak}D · ${stats.pendingTasksCount} TASKS LEFT`;
-            document.getElementById('mob-progress-bar').style.width = `${pctToday}%`;
-            document.getElementById('mob-day-strip').innerHTML = stripHtml;
-            document.getElementById('mob-rituals-list').innerHTML = buildRitualsListHtml(true);
-            document.getElementById('mob-tasks-list').innerHTML = buildTasksListHtml(true);
-            document.getElementById('mob-tasks-counter').textContent = `${stats.pendingTasksCount} PENDING`;
-            document.getElementById('mob-schedule-list').innerHTML = scheduleHtml;
-            document.getElementById('mob-vel-avg').textContent = `${stats.weeklyVelocityPct}% AVG`;
-            document.getElementById('mob-velocity-bars').innerHTML = velBarsHtml;
-            document.getElementById('mob-matrix-rows').innerHTML = matrixHtml;
-
-            // --- 2. TABLET RENDER ---
-            document.getElementById('tab-date-heading').textContent =
-                `${dayMeta.full}, ${dayMeta.dateNum} ${dayMeta.monthShort}`;
-            document.getElementById('tab-completion-pill').textContent =
-                `${pctToday}% RITUALS (${doneToday}/${stats.totalRituals})`;
-            document.getElementById('tab-day-strip').innerHTML = stripHtml;
-            document.getElementById('tab-schedule-list').innerHTML = scheduleHtml;
-            document.getElementById('tab-vel-badge').textContent = `${stats.weeklyVelocityPct}% VELOCITY`;
-            document.getElementById('tab-velocity-bars').innerHTML = velBarsHtml;
-            document.getElementById('tab-matrix-rows').innerHTML = matrixHtml;
-            document.getElementById('tab-rituals-list').innerHTML = buildRitualsListHtml(false);
-            document.getElementById('tab-tasks-list').innerHTML = buildTasksListHtml(false);
-            document.getElementById('tab-tasks-summary').textContent =
-                `${stats.pendingTasksCount} OPEN // ${state.tasks.length - stats.pendingTasksCount} COMPLETED`;
-
-            // --- 3. DESKTOP RENDER ---
-            document.getElementById('desk-ritual-score').textContent =
-                `${doneToday}/${stats.totalRituals} (${pctToday}%)`;
-            document.getElementById('desk-day-strip').innerHTML = stripHtml;
-            document.getElementById('desk-rituals-list').innerHTML = buildRitualsListHtml(false);
-            document.getElementById('desk-vel-pct').textContent = `${stats.weeklyVelocityPct}% AVG`;
-            document.getElementById('desk-velocity-bars').innerHTML = velBarsHtml;
-            document.getElementById('desk-matrix-rows').innerHTML = matrixHtml;
-            document.getElementById('desk-tasks-count').textContent = `${stats.pendingTasksCount} PENDING`;
-            document.getElementById('desk-tasks-list').innerHTML = buildTasksListHtml(false);
-            document.getElementById('desk-schedule-list').innerHTML = scheduleHtml;
-        }
-
-        /* ============================================================================
-           7. TWO-WAY EXECUTION ACTIONS + LIVE GOOGLE TASKS PATCH API
-           ============================================================================ */
-        function selectDay(idx) {
-            selectedDayIdx = idx;
-            renderAll();
-        }
-
-        async function patchGoogleTaskStatus(listId, googleTaskId, isCompleted) {
-            if (!googleAccessToken || !googleTaskId) return;
-            try {
-                await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(listId)}/tasks/${encodeURIComponent(googleTaskId)}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${googleAccessToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        status: isCompleted ? 'completed' : 'needsAction'
-                    })
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(sun);
+                d.setDate(sun.getDate() + i);
+                days.push({
+                    iso: d.toISOString().slice(0, 10),
+                    short: d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2),
+                    num: d.getDate()
                 });
-            } catch (e) {
-                console.warn('Google Tasks PATCH sync warning:', e);
             }
+            return days;
         }
 
-        function toggleRitual(ritualId) {
-            toggleRitualOnDay(ritualId, selectedDayIdx);
+        function getPast7Days() {
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push({
+                    iso: d.toISOString().slice(0, 10),
+                    short: d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2),
+                    num: d.getDate()
+                });
+            }
+            return days;
         }
 
-        function toggleRitualOnDay(ritualId, dayIdx) {
-            const r = state.rituals.find(item => item.id === ritualId);
-            if (!r) return;
-            r.days[dayIdx] = !r.days[dayIdx];
-            const isNowDone = r.days[dayIdx];
-            playTactileClick(isNowDone);
-            saveState();
-            renderAll();
+        // Chronological left-to-right order: [-4, -3, -2, -1, 0]
+        // Index 0 = 4 Weeks Ago (far left), Index 4 = Current Week (far right)
+        const weekOffsets = [-4, -3, -2, -1, 0];
+        const weekLabelsMap = {
+            0: "CURRENT WEEK",
+            "-1": "1 WEEK AGO",
+            "-2": "2 WEEKS AGO",
+            "-3": "3 WEEKS AGO",
+            "-4": "4 WEEKS AGO"
+        };
 
-            if (r.googleTaskId && dayIdx === weekCtx.todayIdx) {
-                patchGoogleTaskStatus(state.habitsListId || '@default', r.googleTaskId, isNowDone);
-                showToast(isNowDone ? 'PATCHED -> GOOGLE TASKS [DONE]' : 'PATCHED -> [OPEN]');
-            } else {
-                showToast(isNowDone ? 'RITUAL LOGGED [✓]' : 'RITUAL UNCHECKED');
-            }
+        function offsetToPageIndex(offset) {
+            return weekOffsets.indexOf(offset);
         }
 
-        function markAllRitualsForSelectedDay() {
-            const allDone = state.rituals.every(r => r.days[selectedDayIdx]);
-            state.rituals.forEach(r => {
-                r.days[selectedDayIdx] = !allDone;
-            });
-            playTactileClick(!allDone);
-            saveState();
-            renderAll();
-            showToast(!allDone ? 'ALL RITUALS COMPLETED' : 'DAY CLEARED');
-        }
+        function renderAll() {
+            const past7 = getPast7Days();
 
-        function toggleGoogleTask(taskId) {
-            const t = state.tasks.find(item => item.id === taskId);
-            if (!t) return;
-            t.done = !t.done;
-            playTactileClick(t.done);
-            saveState();
-            renderAll();
+            document.getElementById('dayStrip').innerHTML = past7.map(d => `
+                <div class="day-pill ${d.iso === selectedDate ? 'selected' : ''}" onclick="selectDay('${d.iso}')">
+                    <span class="day-name mono">${d.short}</span>
+                    <span class="day-num mono">${d.num}</span>
+                </div>
+            `).join('');
 
-            if (t.googleTaskId) {
-                patchGoogleTaskStatus(state.tasksListId || '@default', t.googleTaskId, t.done);
-                showToast(t.done ? 'SYNCED TO GOOGLE TASKS [✓]' : 'REOPENED IN GOOGLE TASKS');
-            } else {
-                showToast(t.done ? 'TASK COMPLETED [✓]' : 'TASK REOPENED');
-            }
-        }
-
-        /* ============================================================================
-           8. GOOGLE OAUTH 2.0 FETCH (GCAL + NOTION CAL + GOOGLE TASKS LISTS)
-           ============================================================================ */
-        function authorizeGoogleWorkspace() {
-            const clientIdInput = document.getElementById('oauth-client-id').value.trim();
-            if (!clientIdInput) {
-                showToast('ENTER OAUTH CLIENT ID FIRST');
-                return;
-            }
-            state.clientId = clientIdInput;
-            saveState();
-
-            if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) {
-                showToast('GOOGLE SDK LOADING...');
-                return;
+            const dayLabelEl = document.getElementById('selectedDayAiLabel');
+            if (dayLabelEl) {
+                const uncompletedCount = state.habits.filter(h => !h.history[selectedDate]).length;
+                dayLabelEl.textContent = `DATE: ${selectedDate} · ${uncompletedCount} RITUALS REMAINING`;
             }
 
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: clientIdInput,
-                scope: 'https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/calendar.readonly',
-                callback: async (tokenResponse) => {
-                    if (tokenResponse && tokenResponse.access_token) {
-                        googleAccessToken = tokenResponse.access_token;
-                        document.getElementById('sync-status-label').textContent = 'LIVE // GOOGLE SYNCED';
-                        document.getElementById('oauth-modal').classList.add('hidden');
-                        document.getElementById('oauth-modal').classList.remove('flex');
-                        await pullLiveGoogleWorkspaceData();
-                    }
+            let doneCount = 0;
+            document.getElementById('habitList').innerHTML = state.habits.map((h, index) => {
+                const isDone = !!h.history[selectedDate];
+                if (isDone) doneCount++;
+                return `
+                    <div class="list-row ${isDone ? 'done' : ''}" onclick="toggleHabit('${h.id}')">
+                        <div class="row-left">
+                            <div class="checkbox-sq mono">${isDone ? '✓' : ''}</div>
+                            <span class="item-label">${h.name} <span class="key-badge mono">[${index + 1}]</span></span>
+                        </div>
+                        <span class="mono" style="font-size:10px;color:var(--muted);">${Object.values(h.history).filter(Boolean).length}/35D</span>
+                    </div>
+                `;
+            }).join('');
+            const habitPct = Math.round((doneCount / state.habits.length) * 100);
+            document.getElementById('habitScore').textContent = `${doneCount}/${state.habits.length} (${habitPct}%)`;
+
+            updateWeekHeaderControls();
+
+            const carousel = document.getElementById('streakCarousel');
+            carousel.innerHTML = weekOffsets.map(offset => {
+                const weekDays = getSunSatWeekDays(offset);
+                const dayStats = weekDays.map(d => {
+                    let count = 0;
+                    state.habits.forEach(h => { if (h.history[d.iso]) count++; });
+                    const pct = state.habits.length > 0 ? Math.round((count / state.habits.length) * 100) : 0;
+                    return { ...d, count, pct };
+                });
+
+                return `
+                    <div class="streak-week-page" data-offset="${offset}">
+                        <div class="barchart-container">
+                            ${dayStats.map(d => `
+                                <div class="barchart-col" onclick="selectDay('${d.iso}')" title="${d.short} ${d.num}: ${d.count}/${state.habits.length} completed">
+                                    <span class="mono" style="font-size:8px;color:var(--muted);margin-bottom:4px;">${d.count}/${state.habits.length}</span>
+                                    <div class="barchart-bar" style="height: ${Math.max(d.pct, 10)}%;"></div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="barchart-labels">
+                            ${dayStats.map(d => `
+                                <div class="barchart-label-col ${d.iso === selectedDate ? 'active' : ''}" onclick="selectDay('${d.iso}')" style="cursor:pointer;">${d.short}<br>${d.num}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('weekDots').innerHTML = weekOffsets.map(offset => `
+                <div class="week-dot ${offset === currentWeekOffset ? 'active' : ''}" 
+                     onclick="scrollToWeekOffset(${offset})" 
+                     title="${weekLabelsMap[offset]}"></div>
+            `).join('');
+
+            requestAnimationFrame(() => {
+                const pageIndex = offsetToPageIndex(currentWeekOffset);
+                const targetLeft = pageIndex * carousel.clientWidth;
+                if (!carouselInitialized || Math.abs(carousel.scrollLeft - targetLeft) > 10) {
+                    isProgrammaticScroll = true;
+                    carousel.scrollTo({
+                        left: targetLeft,
+                        behavior: carouselInitialized ? 'smooth' : 'auto'
+                    });
+                    carouselInitialized = true;
+                    setTimeout(() => { isProgrammaticScroll = false; }, 320);
                 }
             });
 
-            tokenClient.requestAccessToken();
+            const pendingTasks = state.tasks.filter(t => !t.done).length;
+            document.getElementById('taskCountLabel').textContent = `${pendingTasks} PENDING`;
+            document.getElementById('taskList').innerHTML = state.tasks.map((t) => `
+                <div class="list-row ${t.done ? 'done' : ''}" onclick="toggleTask('${t.id}')">
+                    <div class="row-left">
+                        <div class="checkbox-sq mono">${t.done ? '✓' : ''}</div>
+                        <span class="item-label">${t.title} ${t.key ? `<span class="key-badge mono">[${t.key.toUpperCase()}]</span>` : ''}</span>
+                    </div>
+                    <span class="event-tag mono">${t.done ? 'DONE' : 'EXEC'}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('calendarList').innerHTML = state.events.map(ev => `
+                <div class="event-card">
+                    <div>
+                        <div class="event-time mono">${ev.time}</div>
+                        <div class="event-title">${ev.title}</div>
+                    </div>
+                    <span class="event-tag mono">${ev.source}</span>
+                </div>
+            `).join('');
+
+            if (document.getElementById('streakAnalyticsModal').classList.contains('active')) {
+                renderPriorityBriefOverlay();
+            }
         }
 
-        async function pullLiveGoogleWorkspaceData() {
-            if (!googleAccessToken) {
-                showToast('DEMO REFRESHED // CONNECT OAUTH FOR LIVE CLOUD');
-                renderAll();
-                return;
+        function updateWeekHeaderControls() {
+            document.getElementById('weekTitleLabel').textContent = weekLabelsMap[currentWeekOffset] || "CURRENT WEEK";
+
+            const prevBtn = document.getElementById('prevWeekBtn');
+            const nextBtn = document.getElementById('nextWeekBtn');
+
+            if (currentWeekOffset <= -4) {
+                prevBtn.style.visibility = 'hidden';
+            } else {
+                prevBtn.style.visibility = 'visible';
             }
 
-            showToast('SYNCING GCAL + NOTION + GTASKS...');
-            try {
-                // 1. Pull Primary Google Calendar Events (includes Notion Calendar blocks)
-                const selDay = weekCtx.days[selectedDayIdx];
-                const startIso = new Date(selDay.iso + 'T00:00:00').toISOString();
-                const endIso = new Date(selDay.iso + 'T23:59:59').toISOString();
+            if (currentWeekOffset >= 0) {
+                nextBtn.style.visibility = 'hidden';
+            } else {
+                nextBtn.textContent = 'NEXT →';
+                nextBtn.style.visibility = 'visible';
+            }
+        }
 
-                const calRes = await fetch(
-                    `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(startIso)}&timeMax=${encodeURIComponent(endIso)}&singleEvents=true&orderBy=startTime`,
-                    { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
-                );
-                const calJson = await calRes.json();
-                if (Array.isArray(calJson.items) && calJson.items.length > 0) {
-                    state.schedule = calJson.items.map((ev, i) => {
-                        const st = ev.start && ev.start.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0, 5) : 'ALL DAY';
-                        const et = ev.end && ev.end.dateTime ? new Date(ev.end.dateTime).toTimeString().slice(0, 5) : '';
-                        return {
-                            id: ev.id || 'cal-' + i,
-                            time: st,
-                            endTime: et,
-                            title: ev.summary || 'Scheduled Block',
-                            source: (ev.organizer && String(ev.organizer.email).includes('notion')) ? 'NOTION CAL' : 'GCAL',
-                            location: ev.location || 'GOOGLE CALENDAR'
-                        };
+        function scrollToWeekOffset(targetOffset) {
+            currentWeekOffset = Math.max(-4, Math.min(0, targetOffset));
+            updateWeekHeaderControls();
+            const carousel = document.getElementById('streakCarousel');
+            if (carousel) {
+                isProgrammaticScroll = true;
+                const pageIndex = offsetToPageIndex(currentWeekOffset);
+                carousel.scrollTo({
+                    left: pageIndex * carousel.clientWidth,
+                    behavior: 'smooth'
+                });
+                document.querySelectorAll('.week-dot').forEach((dot, idx) => {
+                    dot.classList.toggle('active', weekOffsets[idx] === currentWeekOffset);
+                });
+                setTimeout(() => { isProgrammaticScroll = false; }, 350);
+            }
+        }
+
+        function changeWeek(direction) {
+            const nextOffset = currentWeekOffset + direction;
+            if (nextOffset > 0) {
+                openStreakAnalyticsModal();
+                return;
+            }
+            scrollToWeekOffset(nextOffset);
+        }
+
+        (function initStreakInteractions() {
+            const card = document.getElementById('streakCardBox');
+            const carousel = document.getElementById('streakCarousel');
+            let wheelLock = false;
+            let dragStartX = 0;
+            let dragScrollStart = 0;
+            let isMouseDown = false;
+
+            carousel.addEventListener('scroll', () => {
+                if (isProgrammaticScroll || !carousel.clientWidth) return;
+                const pageIndex = Math.round(carousel.scrollLeft / carousel.clientWidth);
+                const clampedIndex = Math.max(0, Math.min(4, pageIndex));
+                const detectedOffset = weekOffsets[clampedIndex];
+                if (detectedOffset !== currentWeekOffset) {
+                    currentWeekOffset = detectedOffset;
+                    updateWeekHeaderControls();
+                    document.querySelectorAll('.week-dot').forEach((dot, idx) => {
+                        dot.classList.toggle('active', weekOffsets[idx] === currentWeekOffset);
+                    });
+                }
+            }, { passive: true });
+
+            card.addEventListener('wheel', (e) => {
+                const primaryDelta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                if (Math.abs(primaryDelta) < 18) return;
+
+                e.preventDefault();
+                if (wheelLock) return;
+                wheelLock = true;
+
+                // Natural left/right scroll mapping:
+                // Negative delta (scroll left / up) -> go to previous week (-1)
+                // Positive delta (scroll right / down) -> go to next week (+1)
+                if (primaryDelta < 0) {
+                    if (currentWeekOffset > -4) scrollToWeekOffset(currentWeekOffset - 1);
+                } else if (primaryDelta > 0) {
+                    if (currentWeekOffset < 0) scrollToWeekOffset(currentWeekOffset + 1);
+                    else if (primaryDelta > 40) openStreakAnalyticsModal();
+                }
+
+                setTimeout(() => { wheelLock = false; }, 420);
+            }, { passive: false });
+
+            carousel.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                dragStartX = e.clientX;
+                dragScrollStart = carousel.scrollLeft;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isMouseDown) return;
+                const dx = dragStartX - e.clientX;
+                carousel.scrollLeft = dragScrollStart + dx;
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                if (!isMouseDown) return;
+                isMouseDown = false;
+                const diffX = e.clientX - dragStartX;
+                if (Math.abs(diffX) > 40) {
+                    // Dragging right (diffX > 0) reveals the week to the left (older week)
+                    if (diffX > 0 && currentWeekOffset > -4) scrollToWeekOffset(currentWeekOffset - 1);
+                    else if (diffX < 0) {
+                        if (currentWeekOffset < 0) scrollToWeekOffset(currentWeekOffset + 1);
+                        else openStreakAnalyticsModal();
+                    }
+                }
+            });
+        })();
+
+        function selectDay(iso) {
+            selectedDate = iso;
+            renderAll();
+        }
+
+        function toggleHabit(id) {
+            const h = state.habits.find(x => x.id === id);
+            if (h) {
+                h.history[selectedDate] = !h.history[selectedDate];
+                if (navigator.vibrate) navigator.vibrate(10);
+                saveState();
+            }
+        }
+
+        function toggleTask(id) {
+            const t = state.tasks.find(x => x.id === id);
+            if (t) {
+                t.done = !t.done;
+                if (navigator.vibrate) navigator.vibrate(10);
+                saveState();
+            }
+        }
+
+        function switchMobileSubTab(paneName, el) {
+            document.querySelectorAll('.pane').forEach(p => p.classList.remove('active-mobile'));
+            document.getElementById('pane-' + paneName).classList.add('active-mobile');
+            document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+            if (el) el.classList.add('active');
+        }
+
+        function openTerminal() { document.getElementById('terminalModal').classList.add('active'); }
+        function closeTerminal() { document.getElementById('terminalModal').classList.remove('active'); }
+        
+        function openSyncModal() { 
+            document.getElementById('clientIdInput').value = state.clientId || '';
+            document.getElementById('syncModal').classList.add('active'); 
+        }
+        function closeSyncModal() { document.getElementById('syncModal').classList.remove('active'); }
+        
+        function openShortcutsModal() { document.getElementById('shortcutsModal').classList.add('active'); }
+        function closeShortcutsModal() { document.getElementById('shortcutsModal').classList.remove('active'); }
+
+        function renderPriorityBriefOverlay() {
+            const pendingTasks = state.tasks.filter(t => !t.done);
+            const remainingRituals = state.habits.filter(h => !h.history[todayIso]);
+            const sortedEvents = [...state.events].sort((a, b) => a.time.localeCompare(b.time));
+
+            const tasksHtml = pendingTasks.length > 0
+                ? `<div class="item-list">${pendingTasks.map(t => `
+                    <div class="list-row" onclick="toggleTask('${t.id}')">
+                        <div class="row-left">
+                            <div class="checkbox-sq mono"></div>
+                            <span class="item-label">${t.title} ${t.key ? `<span class="key-badge mono">[${t.key.toUpperCase()}]</span>` : ''}</span>
+                        </div>
+                        <span class="event-tag mono">EXEC</span>
+                    </div>
+                `).join('')}</div>`
+                : `<div class="mono" style="font-size:11px;padding:10px;border:var(--border-subtle);background:var(--surface);text-align:center;font-weight:700;">✓ ALL PRIORITY TASKS COMPLETED</div>`;
+
+            const eventsHtml = sortedEvents.length > 0
+                ? `<div>${sortedEvents.map(ev => `
+                    <div class="event-card" style="margin-bottom:6px;">
+                        <div>
+                            <div class="event-time mono">${ev.time}</div>
+                            <div class="event-title">${ev.title}</div>
+                        </div>
+                        <span class="event-tag mono">${ev.source}</span>
+                    </div>
+                `).join('')}</div>`
+                : `<div class="mono" style="font-size:11px;padding:10px;border:var(--border-subtle);background:var(--surface);text-align:center;">NO UPCOMING APPOINTMENTS</div>`;
+
+            const ritualsHtml = remainingRituals.length > 0
+                ? `<div class="item-list">${remainingRituals.map(h => `
+                    <div class="list-row" onclick="toggleHabitOnToday('${h.id}')">
+                        <div class="row-left">
+                            <div class="checkbox-sq mono"></div>
+                            <span class="item-label">${h.name}</span>
+                        </div>
+                        <span class="event-tag mono">TODAY</span>
+                    </div>
+                `).join('')}</div>`
+                : `<div class="mono" style="font-size:11px;padding:10px;border:var(--border-subtle);background:var(--surface);text-align:center;font-weight:700;">✓ ALL DAILY RITUALS COMPLETED</div>`;
+
+            document.getElementById('analyticsModalContent').innerHTML = `
+                <div>
+                    <div class="pane-header" style="margin-bottom:6px;padding-bottom:4px;">
+                        <span class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.05em;">SECTION A // PRIORITY TASKS & REMINDERS</span>
+                        <span class="mono" style="font-size:10px;color:var(--muted);">${pendingTasks.length} PENDING</span>
+                    </div>
+                    ${tasksHtml}
+                </div>
+                <div>
+                    <div class="pane-header" style="margin-bottom:6px;padding-bottom:4px;">
+                        <span class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.05em;">SECTION B // UPCOMING APPOINTMENTS & SCHEDULE</span>
+                        <span class="mono" style="font-size:10px;color:var(--muted);">${sortedEvents.length} BLOCKS</span>
+                    </div>
+                    ${eventsHtml}
+                </div>
+                <div>
+                    <div class="pane-header" style="margin-bottom:6px;padding-bottom:4px;">
+                        <span class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.05em;">SECTION C // CRITICAL DAILY RITUALS REMAINING</span>
+                        <span class="mono" style="font-size:10px;color:var(--muted);">${remainingRituals.length} LEFT</span>
+                    </div>
+                    ${ritualsHtml}
+                </div>
+            `;
+        }
+
+        function toggleHabitOnToday(id) {
+            const h = state.habits.find(x => x.id === id);
+            if (h) {
+                h.history[todayIso] = !h.history[todayIso];
+                if (navigator.vibrate) navigator.vibrate(10);
+                saveState();
+            }
+        }
+
+        function openStreakAnalyticsModal() {
+            renderPriorityBriefOverlay();
+            document.getElementById('streakAnalyticsModal').classList.add('active');
+        }
+        function closeStreakAnalyticsModal() { 
+            document.getElementById('streakAnalyticsModal').classList.remove('active'); 
+        }
+
+        function handleBackdropClick(e, modalId) {
+            if (e.target.id === modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            }
+        }
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(uploadEvent) {
+                const base64String = uploadEvent.target.result.split(',')[1];
+                uploadedImageBase64 = base64String;
+                document.getElementById('imageStatus').textContent = `Image loaded (${file.name})`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function analyzeStreakWithGemini() {
+            const banner = document.getElementById('aiStreakBanner');
+            const textEl = document.getElementById('aiStreakText');
+            const titleEl = document.getElementById('aiStreakTitle');
+            const actionRow = document.getElementById('aiStreakActionRow');
+            const btn = document.getElementById('aiStreakCoachBtn');
+
+            banner.classList.add('active');
+            actionRow.style.display = 'none';
+            document.getElementById('aiStreakSources').style.display = 'none';
+            btn.disabled = true;
+            titleEl.textContent = '✦ GEMINI VELOCITY DIAGNOSTIC // ANALYZING...';
+            textEl.textContent = 'Scanning 5-week bar chart telemetry and selected day rituals...';
+
+            try {
+                const weekDays = getSunSatWeekDays(currentWeekOffset);
+                const weekBreakdown = weekDays.map(d => {
+                    const completedNames = state.habits.filter(h => h.history[d.iso]).map(h => h.name);
+                    return `${d.short} ${d.num} (${d.iso}): ${completedNames.length}/${state.habits.length} done`;
+                }).join(' | ');
+
+                const habitRates = state.habits.map(h => {
+                    const totalDone = Object.values(h.history).filter(Boolean).length;
+                    const doneSelected = !!h.history[selectedDate];
+                    return `${h.name}: ${totalDone}/35 days total (Selected Date ${selectedDate}: ${doneSelected ? 'DONE' : 'MISSED'})`;
+                }).join('; ');
+
+                const prompt = `Analyze this user's Habit Engine telemetry for week offset ${currentWeekOffset} (${weekBreakdown}). Per-habit 35-day stats: ${habitRates}. Identify the weakest ritual or day pattern, give a crisp 2-sentence Swiss tactical diagnostic, and suggest 1 concrete corrective task or time-block for today.`;
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                    systemInstruction: {
+                        parts: [{ text: "You are PROTOCOL // 03, a high-precision execution OS coach. Be concise, analytical, and direct." }]
+                    },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                headline: { type: "STRING" },
+                                diagnostic: { type: "STRING" },
+                                weakestHabit: { type: "STRING" },
+                                suggestedActionType: { type: "STRING", enum: ["task", "event"] },
+                                suggestedTitle: { type: "STRING" },
+                                suggestedTime: { type: "STRING" }
+                            },
+                            propertyOrdering: ["headline", "diagnostic", "weakestHabit", "suggestedActionType", "suggestedTitle", "suggestedTime"]
+                        }
+                    }
+                };
+
+                const result = await fetchGeminiWithBackoff(apiUrl, payload);
+                const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+                const parsed = JSON.parse(rawJson);
+
+                titleEl.textContent = `✦ ${parsed.headline || 'STREAK VELOCITY AUDIT'} (FOCUS: ${parsed.weakestHabit || 'RITUALS'})`;
+                textEl.textContent = parsed.diagnostic || 'Velocity stable. Maintain daily consistency.';
+                lastAiStreakSummary = `${parsed.headline || 'Streak Audit'}. ${parsed.diagnostic || ''}`;
+
+                if (parsed.suggestedTitle) {
+                    pendingAiSuggestion = {
+                        type: parsed.suggestedActionType || 'task',
+                        title: parsed.suggestedTitle,
+                        time: parsed.suggestedTime || '18:00'
+                    };
+                    document.getElementById('aiSuggestedTaskLabel').textContent =
+                        pendingAiSuggestion.type === 'event'
+                            ? `SUGGESTED BLOCK [${pendingAiSuggestion.time}]: ${pendingAiSuggestion.title}`
+                            : `SUGGESTED TASK: ${pendingAiSuggestion.title}`;
+                    actionRow.style.display = 'flex';
+                }
+            } catch (err) {
+                titleEl.textContent = '✦ DIAGNOSTIC INTERRUPTED';
+                textEl.textContent = `Could not reach Gemini API (${err.message}).`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function applyAiSuggestedAction() {
+            if (!pendingAiSuggestion) return;
+            if (pendingAiSuggestion.type === 'event') {
+                state.events.push({
+                    time: pendingAiSuggestion.time || '18:00',
+                    title: pendingAiSuggestion.title,
+                    source: 'GEMINI AI'
+                });
+                state.events.sort((a, b) => a.time.localeCompare(b.time));
+            } else {
+                state.tasks.unshift({
+                    id: 't_' + Date.now(),
+                    title: pendingAiSuggestion.title,
+                    done: false
+                });
+            }
+            pendingAiSuggestion = null;
+            document.getElementById('aiStreakActionRow').style.display = 'none';
+            saveState();
+        }
+
+        async function fetchGroundedHabitProtocol() {
+            const banner = document.getElementById('aiStreakBanner');
+            const textEl = document.getElementById('aiStreakText');
+            const titleEl = document.getElementById('aiStreakTitle');
+            const sourcesEl = document.getElementById('aiStreakSources');
+            const actionRow = document.getElementById('aiStreakActionRow');
+            const btn = document.getElementById('aiGroundedTipBtn');
+
+            banner.classList.add('active');
+            actionRow.style.display = 'none';
+            sourcesEl.style.display = 'none';
+            btn.disabled = true;
+
+            let weakest = state.habits[0];
+            let minScore = Infinity;
+            state.habits.forEach(h => {
+                const score = Object.values(h.history).filter(Boolean).length;
+                if (score < minScore) {
+                    minScore = score;
+                    weakest = h;
+                }
+            });
+
+            titleEl.textContent = `🌐 GROUNDED PROTOCOL RESEARCH // ${weakest.name.toUpperCase()}`;
+            textEl.textContent = `Searching latest peer-reviewed exercise & cognitive science for "${weakest.name}"...`;
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{
+                        parts: [{
+                            text: `Find an evidence-based, high-efficiency daily protocol tip to improve consistency and performance in "${weakest.name}" (current completion: ${minScore}/35 days). Keep it to 2 crisp tactical sentences.`
+                        }]
+                    }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: "Act as an elite sports and cognitive performance scientist. Provide a concise, two-sentence actionable protocol backed by real-world evidence." }]
+                    }
+                };
+
+                const result = await fetchGeminiWithBackoff(apiUrl, payload);
+                const candidate = result?.candidates?.[0];
+                const text = candidate?.content?.parts?.[0]?.text || 'Anchor this habit immediately after an existing morning trigger to lock in automaticity.';
+                textEl.textContent = text;
+                lastAiStreakSummary = text;
+
+                const groundingMetadata = candidate?.groundingMetadata;
+                if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                    const sources = groundingMetadata.groundingAttributions
+                        .map(attr => ({ uri: attr.web?.uri, title: attr.web?.title }))
+                        .filter(s => s.uri && s.title)
+                        .slice(0, 3);
+                    if (sources.length > 0) {
+                        sourcesEl.innerHTML = `<span style="font-weight:700;">SOURCES:</span> ` + sources.map(s =>
+                            `<a href="${s.uri}" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:underline;">${s.title.slice(0, 28)}...</a>`
+                        ).join(' · ');
+                        sourcesEl.style.display = 'flex';
+                    }
+                }
+            } catch (err) {
+                titleEl.textContent = '🌐 SEARCH GROUNDING INTERRUPTED';
+                textEl.textContent = `Could not complete grounded query (${err.message}).`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function generateDayPlanWithGemini() {
+            const banner = document.getElementById('aiStreakBanner');
+            const textEl = document.getElementById('aiStreakText');
+            const titleEl = document.getElementById('aiStreakTitle');
+            const actionRow = document.getElementById('aiStreakActionRow');
+            const sourcesEl = document.getElementById('aiStreakSources');
+            const btn = document.getElementById('aiDayPlannerBtn');
+
+            banner.classList.add('active');
+            actionRow.style.display = 'none';
+            sourcesEl.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'PLANNING...';
+
+            const remainingHabits = state.habits.filter(h => !h.history[selectedDate]).map(h => h.name);
+            titleEl.textContent = `✦ GEMINI DAY ARCHITECT // ${selectedDate}`;
+            textEl.textContent = `Synthesizing optimal task & time-block schedule for ${remainingHabits.length} remaining rituals...`;
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const prompt = `Selected Date: ${selectedDate}. Remaining uncompleted daily rituals: ${remainingHabits.join(', ') || 'All done — focus on deep stretch goals'}. Existing schedule blocks: ${state.events.map(e => e.time + ' ' + e.title).join('; ')}. Generate 1 high-leverage execution task and 1 non-conflicting schedule time-block to help complete today's remaining rituals.`;
+
+                const payload = {
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                strategyNote: { type: "STRING" },
+                                newTaskTitle: { type: "STRING" },
+                                newBlockTime: { type: "STRING" },
+                                newBlockTitle: { type: "STRING" }
+                            },
+                            propertyOrdering: ["strategyNote", "newTaskTitle", "newBlockTime", "newBlockTitle"]
+                        }
+                    }
+                };
+
+                const result = await fetchGeminiWithBackoff(apiUrl, payload);
+                const parsed = JSON.parse(result?.candidates?.[0]?.content?.parts?.[0]?.text || '{}');
+
+                if (parsed.newTaskTitle) {
+                    state.tasks.unshift({
+                        id: 't_' + Date.now(),
+                        title: parsed.newTaskTitle,
+                        done: false
+                    });
+                }
+                if (parsed.newBlockTitle && parsed.newBlockTime) {
+                    state.events.push({
+                        time: parsed.newBlockTime,
+                        title: parsed.newBlockTitle,
+                        source: 'GEMINI PLAN'
+                    });
+                    state.events.sort((a, b) => a.time.localeCompare(b.time));
+                }
+
+                textEl.textContent = `${parsed.strategyNote || 'Day plan locked in.'} Added task "${parsed.newTaskTitle}" & block [${parsed.newBlockTime}] "${parsed.newBlockTitle}".`;
+                lastAiStreakSummary = textEl.textContent;
+                saveState();
+            } catch (err) {
+                titleEl.textContent = '✦ DAY ARCHITECT ERROR';
+                textEl.textContent = `Could not generate day plan (${err.message}).`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✦ AI AUTO-PLAN DAY';
+            }
+        }
+
+        async function generateDrawerAiPrescription() {
+            const triageOut = document.getElementById('priorityTriageOutput');
+            const btn = document.getElementById('priorityTriageBtn');
+            triageOut.style.display = 'block';
+            triageOut.textContent = '✦ Querying Gemini 3 Flash for Priority Triage...';
+            if (btn) btn.disabled = true;
+
+            try {
+                const pendingTasks = state.tasks.filter(t => !t.done).map(t => t.title);
+                const remainingRituals = state.habits.filter(h => !h.history[todayIso]).map(h => h.name);
+                const scheduleStr = state.events.map(e => `${e.time} ${e.title} (${e.source})`).join('; ');
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{
+                        role: 'user',
+                        parts: [{ text: `Rank the single most urgent item to execute right now based on: Pending Tasks [${pendingTasks.join(', ') || 'None'}], Upcoming Appointments [${scheduleStr}], and Remaining Daily Rituals [${remainingRituals.join(', ') || 'None'}]. Provide a crisp 2-sentence tactical triage directive.` }]
+                    }]
+                };
+                const res = await fetchGeminiWithBackoff(apiUrl, payload);
+                const reply = res?.candidates?.[0]?.content?.parts?.[0]?.text || 'Execute your highest-leverage pending task before the next scheduled block.';
+                triageOut.innerHTML = `<b>✦ GEMINI PRIORITY TRIAGE:</b>\n${reply}`;
+                lastAiStreakSummary = reply;
+            } catch (e) {
+                triageOut.textContent = `[ERROR]: ${e.message}`;
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function speakStreakInsight() {
+            const btn = document.getElementById('aiStreakTtsBtn');
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+                const ttsPayload = {
+                    contents: [{
+                        parts: [{ text: `Say in a focused, crisp tactical tone: ${lastAiStreakSummary}` }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } }
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
+                const result = await fetchGeminiWithBackoff(apiUrl, ttsPayload);
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType || '';
+                if (audioData && mimeType.startsWith("audio/")) {
+                    const rateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+                    const binaryString = atob(audioData);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+                    const pcm16 = new Int16Array(bytes.buffer);
+                    const wavBlob = pcmToWavBlob(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔊';
+            }
+        }
+
+        async function runGeminiCommand() {
+            const prompt = document.getElementById('terminalInput').value.trim();
+            const output = document.getElementById('terminalOutput');
+            if (!prompt && !uploadedImageBase64) return;
+
+            output.textContent = '✦ Querying gemini-3-flash-preview...';
+            try {
+                const systemPrompt = "You are Protocol AI, an elite execution OS co-pilot. Parse user natural language or syllabus/notes images into structured tasks, calendar time-blocks, or new daily habits.";
+                
+                let parts = [{ text: prompt || "Analyze this image and extract actionable tasks and study schedule blocks." }];
+                if (uploadedImageBase64) {
+                    parts.push({
+                        inlineData: {
+                            mimeType: "image/jpeg",
+                            data: uploadedImageBase64
+                        }
                     });
                 }
 
-                // 2. Pull Google Task Lists (Look for 'Habits' list and default Tasks list)
-                const listsRes = await fetch(
-                    'https://tasks.googleapis.com/tasks/v1/users/@me/lists',
-                    { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
-                );
-                const listsJson = await listsRes.json();
-                let habitsList = null;
-                let defaultList = null;
-
-                if (Array.isArray(listsJson.items)) {
-                    habitsList = listsJson.items.find(l => l.title.toLowerCase().includes('habit') || l.title.toLowerCase().includes('ritual'));
-                    defaultList = listsJson.items[0];
-                }
-
-                if (defaultList) {
-                    state.tasksListId = defaultList.id;
-                    const tRes = await fetch(
-                        `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(defaultList.id)}/tasks?showCompleted=true`,
-                        { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
-                    );
-                    const tJson = await tRes.json();
-                    if (Array.isArray(tJson.items) && tJson.items.length > 0) {
-                        state.tasks = tJson.items
-                            .filter(item => item.title && item.title.trim())
-                            .map(item => ({
-                                id: 'gt-' + item.id,
-                                googleTaskId: item.id,
-                                title: item.title,
-                                dueLabel: item.due ? `DUE // ${item.due.slice(0, 10)}` : 'GOOGLE TASKS // GEMINI',
-                                source: 'GOOGLE TASKS',
-                                done: item.status === 'completed'
-                            }));
+                const payload = {
+                    contents: [{ role: 'user', parts: parts }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: {
+                        responseMimeType: 'application/json',
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                action: { type: "STRING", enum: ["task", "event", "habit", "none"] },
+                                title: { type: "STRING" },
+                                time: { type: "STRING" },
+                                message: { type: "STRING" }
+                            },
+                            propertyOrdering: ["action", "title", "time", "message"]
+                        }
                     }
-                }
+                };
 
-                if (habitsList) {
-                    state.habitsListId = habitsList.id;
-                    const hRes = await fetch(
-                        `https://tasks.googleapis.com/tasks/v1/lists/${encodeURIComponent(habitsList.id)}/tasks?showCompleted=true`,
-                        { headers: { 'Authorization': `Bearer ${googleAccessToken}` } }
-                    );
-                    const hJson = await hRes.json();
-                    if (Array.isArray(hJson.items) && hJson.items.length > 0) {
-                        state.rituals = hJson.items
-                            .filter(item => item.title && item.title.trim())
-                            .map((item, idx) => {
-                                const existing = state.rituals[idx];
-                                const daysArr = existing ? existing.days : [false, false, false, false, false, false, false];
-                                daysArr[weekCtx.todayIdx] = item.status === 'completed';
-                                return {
-                                    id: 'rit-' + item.id,
-                                    googleTaskId: item.id,
-                                    name: item.title,
-                                    category: 'HABITS LIST',
-                                    days: daysArr
-                                };
-                            });
-                    }
-                }
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const data = await fetchGeminiWithBackoff(apiUrl, payload);
+                const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                const parsed = JSON.parse(jsonText || '{}');
 
+                if (parsed.action === 'task') {
+                    state.tasks.unshift({ id: 't_' + Date.now(), title: parsed.title || prompt, done: false });
+                    output.textContent = `[SUCCESS] Added Google Task: "${parsed.title || prompt}"\n${parsed.message || ''}`;
+                } else if (parsed.action === 'event') {
+                    state.events.push({ time: parsed.time || '12:00', title: parsed.title || prompt, source: 'GEMINI AI' });
+                    state.events.sort((a,b) => a.time.localeCompare(b.time));
+                    output.textContent = `[SUCCESS] Added Schedule Block at ${parsed.time || '12:00'}: "${parsed.title || prompt}"\n${parsed.message || ''}`;
+                } else if (parsed.action === 'habit') {
+                    state.habits.push({ id: 'h_' + Date.now(), name: parsed.title || prompt, history: { [selectedDate]: false } });
+                    output.textContent = `[SUCCESS] Added Daily Ritual: "${parsed.title || prompt}"`;
+                } else {
+                    output.textContent = `[GEMINI RESPONDED]: ${parsed.message || jsonText}`;
+                }
                 saveState();
-                renderAll();
-                showToast('GOOGLE CLOUD SYNC COMPLETE');
+                document.getElementById('terminalInput').value = '';
+                uploadedImageBase64 = null;
+                document.getElementById('imageStatus').textContent = 'Upload syllabus/notes for AI parsing';
             } catch (err) {
-                console.error(err);
-                showToast('SYNC ERROR // CHECK CONSOLE');
+                output.textContent = `[ERROR]: Failed to execute command. (${err.message})`;
             }
         }
 
-        /* ============================================================================
-           9. EVENT LISTENERS, CLOCK TELEMETRY & KEYBOARD SHORTCUTS
-           ============================================================================ */
-        function switchMobileSubTab(tabName) {
-            activeMobileTab = tabName;
-            const titles = {
-                rituals: '01 // DAILY RITUALS',
-                tasks: '02 // GOOGLE TASKS',
-                schedule: '03 // TODAY SCHEDULE',
-                matrix: '04 // 7D STREAK MATRIX'
-            };
-            document.getElementById('mob-pane-title').textContent = titles[tabName] || '01 // DAILY RITUALS';
-
-            ['rituals', 'tasks', 'schedule', 'matrix'].forEach(t => {
-                const viewEl = document.getElementById('mob-view-' + t);
-                if (t === tabName) viewEl.classList.remove('hidden');
-                else viewEl.classList.add('hidden');
-            });
-
-            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
-                const isAct = btn.getAttribute('data-mob-tab') === tabName;
-                btn.className = `mob-tab-btn py-3.5 font-mono text-[10px] font-bold uppercase tracking-wider border-r border-bw-hairline ${
-                    isAct ? 'bg-bw-ink text-bw-bg' : 'bg-bw-bg text-bw-ink'
-                }`;
-            });
+        async function generateAiBriefing() {
+            const output = document.getElementById('terminalOutput');
+            output.textContent = '✦ Generating tactical protocol briefing via Gemini...';
+            try {
+                const doneToday = state.habits.filter(h => h.history[selectedDate]).length;
+                const summaryText = `Analyze user state on ${selectedDate}: Habits completed ${doneToday}/${state.habits.length}, Pending tasks: ${state.tasks.filter(t=>!t.done).map(t=>t.title).join('; ')}, Schedule events: ${state.events.map(e=>e.time+' '+e.title).join('; ')}. Provide a 2-sentence sharp executive briefing.`;
+                const payload = { contents: [{ role: 'user', parts: [{ text: summaryText }] }] };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const data = await fetchGeminiWithBackoff(apiUrl, payload);
+                const briefing = data.candidates?.[0]?.content?.parts?.[0]?.text || 'All systems operational.';
+                lastAiStreakSummary = briefing;
+                output.textContent = `[BRIEFING]: ${briefing}`;
+            } catch (err) {
+                output.textContent = `[ERROR]: ${err.message}`;
+            }
         }
 
-        function updateLiveTelemetryClock() {
-            const now = new Date();
-            const timeStr = now.toTimeString().slice(0, 8);
-            const shortTime = now.toTimeString().slice(0, 5);
-            const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase();
-            const deskClock = document.getElementById('desk-live-clock');
-            const mobClock = document.getElementById('mob-now-clock');
-            if (deskClock) deskClock.textContent = `${dateStr} // ${timeStr}`;
-            if (mobClock) mobClock.textContent = `NOW // ${shortTime}`;
-        }
+        async function playAudioBriefing() {
+            const output = document.getElementById('terminalOutput');
+            output.textContent = '🔊 Synthesizing audio voice briefing via Gemini TTS...';
+            try {
+                const ttsPayload = {
+                    contents: [{
+                        parts: [{ text: `Say cheerfully and clearly: ${lastAiStreakSummary}` }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } }
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
 
-        window.addEventListener('DOMContentLoaded', () => {
-            // Viewport Mode Switcher Buttons
-            document.querySelectorAll('.vp-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    viewportMode = btn.getAttribute('data-vp');
-                    renderAll();
-                });
-            });
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+                const ttsData = await fetchGeminiWithBackoff(apiUrl, ttsPayload);
+                const part = ttsData?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
 
-            // Mobile Bottom Navigation Buttons
-            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    switchMobileSubTab(btn.getAttribute('data-mob-tab'));
-                });
-            });
-
-            // Window Resize Listener for AUTO mode
-            window.addEventListener('resize', () => {
-                if (viewportMode === 'auto') applyViewportMode();
-            });
-
-            // OAuth Modal Controls
-            const oauthModal = document.getElementById('oauth-modal');
-            document.getElementById('btn-open-oauth').addEventListener('click', () => {
-                document.getElementById('oauth-client-id').value = state.clientId || '';
-                oauthModal.classList.remove('hidden');
-                oauthModal.classList.add('flex');
-            });
-            document.getElementById('btn-close-oauth').addEventListener('click', () => {
-                oauthModal.classList.add('hidden');
-                oauthModal.classList.remove('flex');
-            });
-            document.getElementById('btn-authorize-google').addEventListener('click', authorizeGoogleWorkspace);
-
-            document.getElementById('btn-reset-demo').addEventListener('click', () => {
-                state = getDefaultState();
-                selectedDayIdx = weekCtx.todayIdx;
-                saveState();
-                renderAll();
-                oauthModal.classList.add('hidden');
-                oauthModal.classList.remove('flex');
-                showToast('DEMO DATA RESTORED');
-            });
-
-            document.getElementById('btn-refresh-sync').addEventListener('click', () => {
-                pullLiveGoogleWorkspaceData();
-            });
-
-            // Desktop Keyboard Shortcuts ([1-5] toggle rituals, [R] refresh sync, [Left/Right] select day)
-            window.addEventListener('keydown', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-                if (e.key >= '1' && e.key <= '5') {
-                    const idx = parseInt(e.key, 10) - 1;
-                    if (state.rituals[idx]) {
-                        toggleRitual(state.rituals[idx].id);
+                if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                    output.textContent = '🔊 Playing Gemini TTS voice briefing...';
+                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+                    
+                    const binaryString = atob(audioData);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
                     }
-                } else if (e.key.toLowerCase() === 'r') {
-                    e.preventDefault();
-                    pullLiveGoogleWorkspaceData();
-                } else if (e.key === 'ArrowLeft') {
-                    selectedDayIdx = Math.max(0, selectedDayIdx - 1);
-                    renderAll();
-                } else if (e.key === 'ArrowRight') {
-                    selectedDayIdx = Math.min(6, selectedDayIdx + 1);
-                    renderAll();
-                } else if (e.key === 'Escape') {
-                    oauthModal.classList.add('hidden');
-                    oauthModal.classList.remove('flex');
+                    
+                    const pcm16 = new Int16Array(bytes.buffer);
+                    const wavBlob = pcmToWavBlob(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                } else {
+                    output.textContent = '[ERROR]: Could not synthesize audio stream.';
+                }
+            } catch (err) {
+                output.textContent = `[TTS ERROR]: ${err.message}`;
+            }
+        }
+
+        function connectGoogleAccount() {
+            const cid = document.getElementById('clientIdInput').value.trim();
+            if (!cid) return;
+            state.clientId = cid;
+            saveState();
+
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: cid,
+                scope: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/tasks',
+                callback: async (resp) => {
+                    if (resp.access_token) {
+                        accessToken = resp.access_token;
+                        document.getElementById('syncLabel').textContent = 'LIVE';
+                        closeSyncModal();
+                    }
                 }
             });
+            tokenClient.requestAccessToken();
+        }
 
-            updateLiveTelemetryClock();
-            setInterval(updateLiveTelemetryClock, 1000);
-            renderAll();
+        window.addEventListener('keydown', (e) => {
+            if (['TEXTAREA', 'INPUT'].includes(e.target.tagName)) return;
+
+            const past7 = getPast7Days();
+            const currIdx = past7.findIndex(d => d.iso === selectedDate);
+
+            if (e.key >= '1' && e.key <= '5') {
+                const habitIdx = parseInt(e.key) - 1;
+                if (state.habits[habitIdx]) toggleHabit(state.habits[habitIdx].id);
+            } else if (['q', 'w', 'e', 'a', 's'].includes(e.key.toLowerCase())) {
+                const task = state.tasks.find(t => t.key === e.key.toLowerCase());
+                if (task) toggleTask(task.id);
+            } else if (e.key === 'ArrowLeft' && currIdx > 0) {
+                selectDay(past7[currIdx - 1].iso);
+            } else if (e.key === 'ArrowRight' && currIdx < past7.length - 1) {
+                selectDay(past7[currIdx + 1].iso);
+            } else if (e.key.toLowerCase() === 't') {
+                selectDay(todayIso);
+            } else if (e.key.toLowerCase() === 'd') {
+                cycleThemePreference();
+            } else if (e.key.toLowerCase() === 'g') {
+                openTerminal();
+            } else if (e.key === '?') {
+                openShortcutsModal();
+            } else if (e.key === 'Escape') {
+                closeTerminal();
+                closeSyncModal();
+                closeShortcutsModal();
+                closeStreakAnalyticsModal();
+            }
         });
+
+        applyEffectiveTheme();
+        updateLiveClock();
+        renderAll();
     </script>
 </body>
 </html>
